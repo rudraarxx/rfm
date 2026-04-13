@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { AudioEngine } from "@/components/audio/AudioEngine";
 import { Player } from "@/components/player/Player";
+import { PWARegistration } from "@/components/pwa/PWARegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "RFM Radio",
   },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -42,6 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-full flex flex-col bg-black text-white antialiased selection:bg-white/10`}>
+        <PWARegistration />
         <Script 
           src="https://cdn.jsdelivr.net/npm/hls.js@latest" 
           strategy="beforeInteractive"
