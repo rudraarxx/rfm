@@ -142,7 +142,7 @@ export function Player() {
                     <Volume2 className="w-4 h-4 text-white/40" />
                     <Slider
                       value={[volume]}
-                      onValueChange={(vals) => setVolume(vals[0])}
+                      onValueChange={(vals) => setVolume(Array.isArray(vals) ? vals[0] : vals)}
                       max={100}
                       step={1}
                       className="w-full"
