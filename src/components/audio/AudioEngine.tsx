@@ -47,13 +47,14 @@ export function AudioEngine() {
         hlsRef.current = null;
       }
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        audioContextRef.current.close().catch(() => {});
         audioContextRef.current = null;
       }
-      audio.src = "";
+      audio.removeAttribute('src');
+      audio.load();
       setAnalyser(null);
     };
-  }, []);
+  }, [setAnalyser]);
 
   // 2. Sync Volume
   useEffect(() => {
@@ -70,34 +71,36 @@ export function AudioEngine() {
     const url = currentStation?.url_resolved || currentStation?.url;
 
     if (isPlaying) {
-      // Initialize Web Audio API on first user interaction
+      if (!url) {
+        setIsPlaying(false);
+        return;
+      }
+
+      // 1. Initialize Web Audio API on first user interaction
       if (!audioContextRef.current) {
         try {
           const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-          const context = new AudioContextClass();
-          const analyser = context.createAnalyser();
-          analyser.fftSize = 256;
-          
-          const source = context.createMediaElementSource(audio);
-          source.connect(analyser);
-          analyser.connect(context.destination);
-          
-          audioContextRef.current = context;
-          sourceRef.current = source;
-          setAnalyser(analyser);
+          if (AudioContextClass) {
+            const context = new AudioContextClass();
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 256;
+            
+            const source = context.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(context.destination);
+            
+            audioContextRef.current = context;
+            sourceRef.current = source;
+            setAnalyser(analyser);
+          }
         } catch (err) {
           console.error("Web Audio API Initialization failed:", err);
         }
       }
 
-      // Resume context if suspended
+      // 2. Resume context safely
       if (audioContextRef.current?.state === "suspended") {
-        audioContextRef.current.resume();
-      }
-
-      if (!url) {
-        setIsPlaying(false);
-        return;
+        audioContextRef.current.resume().catch(e => console.warn("AudioContext resume failed:", e));
       }
 
       const isM3U8 = url.includes(".m3u8");
@@ -115,15 +118,18 @@ export function AudioEngine() {
             audio.src = url;
           } 
           // Priority 2: Use hls.js (Chrome/Firefox/Edge)
-          else if (window.Hls && window.Hls.isSupported()) {
-            const hls = new window.Hls();
-            hls.loadSource(url);
-            hls.attachMedia(audio);
-            hlsRef.current = hls;
-          } else {
-            console.error("HLS is not supported in this browser");
-            setIsPlaying(false);
-            return;
+          else {
+            const Hls = (window as any).Hls;
+            if (Hls && Hls.isSupported()) {
+              const hls = new Hls();
+              hls.loadSource(url);
+              hls.attachMedia(audio);
+              hlsRef.current = hls;
+            } else {
+              console.warn("HLS is not supported in this browser or yet loaded");
+              setIsPlaying(false);
+              return;
+            }
           }
         } else {
           audio.src = url;
@@ -134,20 +140,16 @@ export function AudioEngine() {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((err) => {
-          if (err.name === "NotSupportedError") {
-            console.error("Format not supported or invalid URL:", url);
-          } else if (err.name === "NotAllowedError") {
-            console.warn("Playback blocked by browser (user gesture required)");
-          } else {
+          if (err.name !== "AbortError") { // Ignore AbortErrors caused by quick station changes
             console.error("Playback failed:", err);
+            setIsPlaying(false);
           }
-          setIsPlaying(false);
         });
       }
     } else {
       audio.pause();
     }
-  }, [currentStation, isPlaying, setIsPlaying]);
+  }, [currentStation, isPlaying, setIsPlaying, setAnalyser]);
 
   return null;
 }

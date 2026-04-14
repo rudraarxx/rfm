@@ -11,18 +11,39 @@ import {
   Share2,
   ListMusic,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useRadioStore } from "@/store/useRadioStore";
 import { Visualizer } from "@/components/ui/Visualizer";
 import { AudioSpectrum } from "@/components/ui/AudioSpectrum";
 import { Slider } from "@/components/ui/slider";
+import { Portal } from "@/components/ui/portal";
+import { useHasHydrated } from "@/hooks/useHasHydrated";
 import { cn } from "@/lib/utils";
 
 export function Player() {
+  const hasHydrated = useHasHydrated();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { currentStation, isPlaying, togglePlay, volume, setVolume } =
-    useRadioStore();
+  const [showVolume, setShowVolume] = useState(false);
+  const {
+    currentStation,
+    isPlaying,
+    togglePlay,
+    volume,
+    setVolume,
+    nextStation,
+    previousStation,
+  } = useRadioStore();
 
-  if (!currentStation) return null;
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast("Link Copied", {
+      description: "Ready to share with friends",
+      icon: <div className="p-1 rounded-full bg-brass/20 border border-brass/50"><Share2 className="w-3 h-3 text-brass" /></div>,
+      duration: 3000,
+    });
+  };
+
+  if (!hasHydrated || !currentStation) return null;
 
   return (
     <>
@@ -42,7 +63,7 @@ export function Player() {
           >
             <motion.div
               style={{ willChange: "transform" }}
-              className="w-12 h-12 rounded-xl overflow-hidden bg-mahogany flex-shrink-0 border border-brass/10"
+              className="w-12 h-12 rounded-xl overflow-hidden bg-mahogany shrink-0 border border-brass/10"
             >
               {currentStation.favicon ? (
                 <img
@@ -69,19 +90,30 @@ export function Player() {
               </div>
             </div>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                togglePlay();
-              }}
-              className="w-12 h-12 flex items-center justify-center rounded-full glass-brass border-brass/10 hover:bg-brass/10 transition-colors"
-            >
-              {isPlaying ? (
-                <Pause className="w-5 h-5 fill-brass text-brass" />
-              ) : (
-                <Play className="w-5 h-5 fill-brass text-brass ml-1" />
-              )}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare();
+                }}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/40 hover:text-white"
+              >
+                <Share2 className="w-5 h-5" strokeWidth={1.5} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                className="w-12 h-12 flex items-center justify-center rounded-full glass-brass border-brass/10 hover:bg-brass/10 transition-colors"
+              >
+                {isPlaying ? (
+                  <Pause className="w-5 h-5 fill-brass text-brass" />
+                ) : (
+                  <Play className="w-5 h-5 fill-brass text-brass ml-1" />
+                )}
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -100,7 +132,7 @@ export function Player() {
               mass: 0.8,
             }}
             style={{ willChange: "transform", transform: "translateZ(0)" }}
-            className="fixed inset-0 h-[100dvh] bg-black z-50 flex flex-col p-6 md:p-12 overflow-hidden"
+            className="fixed inset-0 h-dvh bg-black z-50 flex flex-col p-6 md:p-12 overflow-hidden"
           >
             {/* Grab Handle */}
             <button
@@ -108,7 +140,7 @@ export function Player() {
               className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
             />
 
-            <div className="flex justify-between items-center mt-6 flex-shrink-0">
+            <div className="flex justify-between items-center mt-6 shrink-0">
               <button
                 onClick={() => setIsExpanded(false)}
                 className="text-white/40 hover:text-white transition-colors"
@@ -120,7 +152,10 @@ export function Player() {
                   Analog Player
                 </p>
               </div>
-              <button className="text-white/40 hover:text-white transition-colors">
+              <button 
+                onClick={handleShare}
+                className="text-white/40 hover:text-white transition-colors p-2"
+              >
                 <Share2 className="w-6 h-6" strokeWidth={1} />
               </button>
             </div>
@@ -129,7 +164,7 @@ export function Player() {
               {/* Responsive Artwork */}
               <motion.div
                 layoutId={`image-${currentStation.changeuuid}`}
-                className="w-full max-w-[320px] max-h-[40vh] aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_48px_96px_-32px_rgba(212,175,55,0.15)] bg-mahogany border border-brass/10 border-t-brass/20 flex-shrink"
+                className="w-full max-w-[320px] max-h-[40vh] aspect-4/5 rounded-[2.5rem] overflow-hidden shadow-[0_48px_96px_-32px_rgba(212,175,55,0.15)] bg-mahogany border border-brass/10 border-t-brass/20 shrink"
               >
                 {currentStation.favicon ? (
                   <img
@@ -144,7 +179,7 @@ export function Player() {
                 )}
               </motion.div>
 
-              <div className="w-full text-center space-y-2 flex-shrink-0">
+              <div className="w-full text-center space-y-2 shrink-0">
                 <div className="flex items-center justify-center gap-2">
                   <div
                     className={cn(
@@ -180,13 +215,13 @@ export function Player() {
               </div>
 
               {/* Controls */}
-              <div className="w-full space-y-8 flex-shrink-0">
+              <div className="w-full space-y-4 shrink-0">
                 <div className="flex items-center justify-center">
                   <div className="relative flex items-center justify-center w-full max-w-[400px]">
-                    <AudioSpectrum 
-                      width={400} 
-                      height={100} 
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" 
+                    <AudioSpectrum
+                      width={400}
+                      height={100}
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                     />
                     <motion.button
                       whileHover={{ scale: 1.1 }}
@@ -203,18 +238,126 @@ export function Player() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 px-2">
-                    <Volume2 className="w-4 h-4 text-brass/40 flex-shrink-0" />
-                    <Slider
-                      value={[volume]}
-                      onValueChange={(vals) =>
-                        setVolume(Array.isArray(vals) ? vals[0] : vals)
-                      }
-                      max={100}
-                      step={1}
-                      className="w-full"
-                    />
+                <div className="pt-1">
+                  <div className="flex items-center justify-between px-8 py-0 glass-brass rounded-full border border-brass/10 max-w-sm mx-auto">
+                    <div className="flex-1">
+                      <button
+                        onClick={previousStation}
+                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-brass transition-all py-3 w-full text-left"
+                      >
+                        Prev
+                      </button>
+                    </div>
+
+                    {/* Volume Trigger Button (Center) */}
+                    <div className="shrink-0">
+                      <button
+                        onClick={() => setShowVolume((v) => !v)}
+                        className={cn(
+                          "w-10 h-10 flex items-center justify-center transition-all hover:scale-110",
+                          showVolume
+                            ? "text-brass scale-110"
+                            : "text-brass/30 hover:text-brass",
+                        )}
+                      >
+                        <Volume2
+                          className={cn(
+                            "w-4 h-4 transition-transform",
+                            showVolume && "scale-110",
+                          )}
+                          strokeWidth={1.5}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Volume Overlay — Fixed elegant floating bar using Portal for perfect Z-index */}
+                    <AnimatePresence>
+                      {showVolume && (
+                        <Portal>
+                          {/* Backdrop to close on outside click */}
+                          <motion.div
+                            key="volume-backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowVolume(false)}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                            style={{ zIndex: 1000 }}
+                          />
+
+                          {/* Volume Panel */}
+                          <motion.div
+                            key="volume-panel"
+                            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+                            transition={{
+                              type: "spring",
+                              damping: 25,
+                              stiffness: 400,
+                            }}
+                            className="fixed left-1/2 -translate-x-1/2 bottom-40 w-full max-w-[360px] rounded-[2.5rem] border border-brass/30 px-8 py-7 shadow-[0_30px_100px_rgba(0,0,0,0.8)]"
+                            style={{
+                              background:
+                                "linear-gradient(180deg, rgba(25, 20, 15, 0.95) 0%, rgba(10, 8, 5, 0.98) 100%)",
+                              backdropFilter: "blur(40px) saturate(200%)",
+                              zIndex: 1001,
+                            }}
+                          >
+                            <div className="space-y-6">
+                              <div className="flex justify-between items-end">
+                                <div className="space-y-1">
+                                  <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-brass">
+                                    Master Gain
+                                  </h3>
+                                  <p className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em]">
+                                    Lossless Audio Engine
+                                  </p>
+                                </div>
+                                <span className="text-2xl font-primary text-brass tabular-nums">
+                                  {volume}
+                                  <span className="text-[10px] ml-1 opacity-50">
+                                    %
+                                  </span>
+                                </span>
+                              </div>
+
+                              <div className="relative pt-2">
+                                <Slider
+                                  value={[volume]}
+                                  onValueChange={(vals) =>
+                                    setVolume(
+                                      Array.isArray(vals) ? vals[0] : vals,
+                                    )
+                                  }
+                                  max={100}
+                                  step={1}
+                                  className="w-full h-2"
+                                />
+                              </div>
+
+                              <div className="flex justify-center">
+                                <button
+                                  onClick={() => setShowVolume(false)}
+                                  className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-white transition-all"
+                                >
+                                  Close Control
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        </Portal>
+                      )}
+                    </AnimatePresence>
+
+                    <div className="flex-1">
+                      <button
+                        onClick={nextStation}
+                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-brass transition-all py-3 w-full text-right"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

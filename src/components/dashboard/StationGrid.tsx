@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Station } from "@/store/useRadioStore";
+import { Station } from "@/types/radio";
 import { Play, ListMusic, ArrowRight } from "lucide-react";
 import { useRadioStore } from "@/store/useRadioStore";
+import { useHasHydrated } from "@/hooks/useHasHydrated";
 
 interface StationCardProps {
   station: Station;
@@ -27,10 +28,21 @@ export function StationGrid({
         </p>
       </div>
 
-      <div className="flex flex-col gap-10 items-center px-6">
-        {stations.map((station) => (
-          <StationCard key={station.changeuuid} station={station} />
-        ))}
+      <div className="relative group/scroll">
+        <div 
+          className="flex flex-row gap-8 overflow-x-auto px-10 pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
+          style={{
+            WebkitMaskImage: "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)"
+          }}
+        >
+          {stations.map((station) => (
+            <div key={station.changeuuid} className="flex-shrink-0 snap-center">
+              <StationCard station={station} />
+            </div>
+          ))}
+          {/* Spacer to allow reaching the end cleanly */}
+          <div className="flex-shrink-0 w-2" />
+        </div>
       </div>
 
       <div className="flex justify-center px-6">
@@ -44,12 +56,15 @@ export function StationGrid({
 }
 
 function StationCard({ station }: StationCardProps) {
+  const hasHydrated = useHasHydrated();
   const setStation = useRadioStore((state) => state.setStation);
-  const isPlayingAndActive = useRadioStore(
-    (state) =>
-      state.isPlaying &&
-      state.currentStation?.changeuuid === station.changeuuid,
-  );
+  const isPlaying = useRadioStore((state) => state.isPlaying);
+  const activeId = useRadioStore((state) => state.currentStation?.changeuuid);
+
+  const isPlayingAndActive = 
+    hasHydrated && 
+    isPlaying && 
+    activeId === station.changeuuid;
 
   return (
     <motion.div

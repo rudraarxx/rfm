@@ -1,4 +1,4 @@
-import { Station } from "@/store/useRadioStore";
+import { Station } from "@/types/radio";
 
 export const FALLBACK_STATIONS: Station[] = [
   {

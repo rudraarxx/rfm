@@ -6,6 +6,7 @@ import { AudioEngine } from "@/components/audio/AudioEngine";
 import { Player } from "@/components/player/Player";
 import { PWARegistration } from "@/components/pwa/PWARegistration";
 import { DeviceOptimizer } from "@/components/ui/DeviceOptimizer";
+import { Toaster } from "sonner";
 
 const marcellus = Marcellus({
   variable: "--font-marcellus",
@@ -65,6 +66,24 @@ export default function RootLayout({
           {children}
         </main>
         <Player />
+        <Toaster 
+          theme="dark" 
+          position="top-center" 
+          closeButton 
+          richColors={false}
+          toastOptions={{
+            style: {
+              background: "rgba(26, 15, 10, 0.95)",
+              backdropFilter: "blur(40px)",
+              border: "1px solid rgba(212, 175, 55, 0.2)",
+              color: "#FFFFFF",
+              borderRadius: "1rem",
+              fontFamily: "var(--font-marcellus)",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+            },
+            className: "glass-brass",
+          }}
+        />
       </body>
     </html>
   );

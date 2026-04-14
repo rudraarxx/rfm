@@ -1,18 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-export interface Station {
-  changeuuid: string;
-  name: string;
-  url: string;
-  url_resolved: string;
-  homepage: string;
-  favicon: string;
-  tags: string;
-  country: string;
-  state: string;
-  votes: number;
-}
+import { Station } from "@/types/radio";
+import { FALLBACK_STATIONS } from "@/lib/constants";
 
 interface RadioState {
   currentStation: Station | null;
@@ -28,6 +17,8 @@ interface RadioState {
   setVolume: (volume: number) => void;
   setStations: (stations: Station[]) => void;
   setAnalyser: (analyser: AnalyserNode | null) => void;
+  nextStation: () => void;
+  previousStation: () => void;
 }
 
 export const useRadioStore = create<RadioState>()(
@@ -36,7 +27,7 @@ export const useRadioStore = create<RadioState>()(
       currentStation: null,
       isPlaying: false,
       volume: 80,
-      stations: [],
+      stations: FALLBACK_STATIONS,
       analyser: null,
 
       setStation: (station) => set({ currentStation: station, isPlaying: true }),
@@ -45,6 +36,34 @@ export const useRadioStore = create<RadioState>()(
       setVolume: (volume) => set({ volume }),
       setStations: (stations) => set({ stations }),
       setAnalyser: (analyser) => set({ analyser }),
+      
+      nextStation: () => set((state) => {
+        if (state.stations.length === 0) return state;
+        const currentId = state.currentStation?.changeuuid;
+        const currentIndex = state.stations.findIndex(s => s.changeuuid === currentId);
+        
+        // If nothing is playing or station not found, play the first one
+        if (currentIndex === -1) {
+          return { currentStation: state.stations[0], isPlaying: true };
+        }
+        
+        const nextIndex = (currentIndex + 1) % state.stations.length;
+        return { currentStation: state.stations[nextIndex], isPlaying: true };
+      }),
+
+      previousStation: () => set((state) => {
+        if (state.stations.length === 0) return state;
+        const currentId = state.currentStation?.changeuuid;
+        const currentIndex = state.stations.findIndex(s => s.changeuuid === currentId);
+        
+        // If nothing is playing or station not found, play the last one
+        if (currentIndex === -1) {
+          return { currentStation: state.stations[state.stations.length - 1], isPlaying: true };
+        }
+        
+        const prevIndex = (currentIndex - 1 + state.stations.length) % state.stations.length;
+        return { currentStation: state.stations[prevIndex], isPlaying: true };
+      }),
     }),
     {
       name: "radio-storage",
