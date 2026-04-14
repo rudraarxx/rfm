@@ -23,11 +23,13 @@ export function Player() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
+            style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
             onClick={() => setIsExpanded(true)}
             className="fixed bottom-4 left-4 right-4 h-16 glass rounded-2xl flex items-center px-4 gap-3 cursor-pointer z-40 lg:max-w-md lg:left-1/2 lg:-translate-x-1/2"
           >
             <motion.div 
               layoutId="station-image"
+              style={{ willChange: "transform" }}
               className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0"
             >
               {currentStation.favicon ? (
@@ -70,6 +72,7 @@ export function Player() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            style={{ willChange: "transform", transform: "translateZ(0)" }}
             className="fixed inset-0 bg-black z-50 flex flex-col p-8"
           >
             <button

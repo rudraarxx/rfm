@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Background Gradient: Deep Mahogany Wood -->
+    <radialGradient id="woodBg" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#3A1C14" />
+      <stop offset="70%" stop-color="#1A0D0A" />
+      <stop offset="100%" stop-color="#0A0503" />
+    </radialGradient>
+    
+    <!-- Outer Ring Gradient: Brushed Brass -->
+    <linearGradient id="brassOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCEABB" />
+      <stop offset="30%" stop-color="#F8B500" />
+      <stop offset="70%" stop-color="#B38006" />
+      <stop offset="100%" stop-color="#FCEABB" />
+    </linearGradient>
+
+    <!-- Inner Ring Gradient: Dark Brass shadow -->
+    <linearGradient id="brassInner" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B4009" />
+      <stop offset="50%" stop-color="#B38006" />
+      <stop offset="100%" stop-color="#F8B500" />
+    </linearGradient>
+
+    <!-- Glowing amber for waves and text -->
+    <filter id="amberGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Base Wood Panel -->
+  <rect width="512" height="512" rx="112" fill="url(#woodBg)" />
+
+  <!-- Outer Brass Ring -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#brassOuter)" stroke-width="16" />
+  
+  <!-- Inner Brass Ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#brassInner)" stroke-width="6" />
+
+  <!-- Radio Waves -->
+  <g filter="url(#amberGlow)" stroke="#FFB03B" stroke-width="24" stroke-linecap="round" fill="none">
+    <!-- Top arch -->
+    <path d="M 176 160 Q 256 110 336 160" />
+    <!-- Middle arch -->
+    <path d="M 146 220 Q 256 160 366 220" />
+  </g>
+
+  <!-- Typography: RFM -->
+  <text x="256" y="360" font-family="'Playfair Display', Georgia, serif" font-weight="900" font-size="110" fill="#FFE5A3" text-anchor="middle" filter="url(#amberGlow)" letter-spacing="4">RFM</text>
+
+  <!-- Decorative Dial Indicator -->
+  <polygon points="256,400 240,440 272,440" fill="#F8B500" />
+  <line x1="256" y1="440" x2="256" y2="470" stroke="#F8B500" stroke-width="6" stroke-linecap="round" />
+</svg>

@@ -26,7 +26,8 @@ export const metadata: Metadata = {
     title: "RFM Radio",
   },
   icons: {
-    apple: "/icons/apple-touch-icon.png",
+    icon: "/icons/icon.svg",
+    apple: "/icons/icon.svg",
   },
 };
 

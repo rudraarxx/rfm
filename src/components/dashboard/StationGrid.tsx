@@ -10,8 +10,15 @@ interface StationCardProps {
 }
 
 function StationCard({ station }: StationCardProps) {
-  const { setStation, currentStation, isPlaying } = useRadioStore();
-  const isActive = currentStation?.changeuuid === station.changeuuid;
+  const setStation = useRadioStore(state => state.setStation);
+  
+  // High-performance Selectors: Component ONLY re-renders if IT is the active item being played/paused
+  const isPlayingAndActive = useRadioStore(state => 
+    state.isPlaying && state.currentStation?.changeuuid === station.changeuuid
+  );
+  const isActive = useRadioStore(state => 
+    state.currentStation?.changeuuid === station.changeuuid
+  );
 
   return (
     <motion.div
@@ -31,7 +38,7 @@ function StationCard({ station }: StationCardProps) {
         
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
-            {isActive && isPlaying ? (
+            {isPlayingAndActive ? (
               <div className="flex gap-1 items-end h-4">
                 {[1, 2, 3].map(i => (
                   <motion.div
@@ -59,6 +66,7 @@ function StationCard({ station }: StationCardProps) {
     </motion.div>
   );
 }
+
 
 export function StationGrid({ stations, title }: { stations: Station[], title: string }) {
   return (
