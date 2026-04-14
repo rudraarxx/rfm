@@ -19,6 +19,7 @@ interface RadioState {
   isPlaying: boolean;
   volume: number;
   stations: Station[];
+  analyser: AnalyserNode | null;
   
   // Actions
   setStation: (station: Station) => void;
@@ -26,6 +27,7 @@ interface RadioState {
   setIsPlaying: (isPlaying: boolean) => void;
   setVolume: (volume: number) => void;
   setStations: (stations: Station[]) => void;
+  setAnalyser: (analyser: AnalyserNode | null) => void;
 }
 
 export const useRadioStore = create<RadioState>()(
@@ -35,12 +37,14 @@ export const useRadioStore = create<RadioState>()(
       isPlaying: false,
       volume: 80,
       stations: [],
+      analyser: null,
 
       setStation: (station) => set({ currentStation: station, isPlaying: true }),
       togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
       setIsPlaying: (isPlaying) => set({ isPlaying }),
       setVolume: (volume) => set({ volume }),
       setStations: (stations) => set({ stations }),
+      setAnalyser: (analyser) => set({ analyser }),
     }),
     {
       name: "radio-storage",

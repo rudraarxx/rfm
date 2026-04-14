@@ -12,13 +12,16 @@ declare global {
 export function AudioEngine() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hlsRef = useRef<any>(null);
-  const { currentStation, isPlaying, volume, setIsPlaying } = useRadioStore();
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const { currentStation, isPlaying, volume, setIsPlaying, setAnalyser } = useRadioStore();
 
   // 1. Initialize audio element
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.preload = "none";
+      audioRef.current.crossOrigin = "anonymous";
     }
     
     const audio = audioRef.current;
@@ -43,7 +46,12 @@ export function AudioEngine() {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
       audio.src = "";
+      setAnalyser(null);
     };
   }, []);
 
@@ -62,6 +70,31 @@ export function AudioEngine() {
     const url = currentStation?.url_resolved || currentStation?.url;
 
     if (isPlaying) {
+      // Initialize Web Audio API on first user interaction
+      if (!audioContextRef.current) {
+        try {
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          const context = new AudioContextClass();
+          const analyser = context.createAnalyser();
+          analyser.fftSize = 256;
+          
+          const source = context.createMediaElementSource(audio);
+          source.connect(analyser);
+          analyser.connect(context.destination);
+          
+          audioContextRef.current = context;
+          sourceRef.current = source;
+          setAnalyser(analyser);
+        } catch (err) {
+          console.error("Web Audio API Initialization failed:", err);
+        }
+      }
+
+      // Resume context if suspended
+      if (audioContextRef.current?.state === "suspended") {
+        audioContextRef.current.resume();
+      }
+
       if (!url) {
         setIsPlaying(false);
         return;
