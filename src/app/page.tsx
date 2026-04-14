@@ -6,19 +6,19 @@ export default async function Home() {
   const featuredStations = [...FALLBACK_STATIONS];
 
   return (
-    <div className="flex flex-col gap-12 max-w-lg mx-auto overflow-hidden">
+    <div className="flex flex-col gap-16 max-w-lg mx-auto overflow-hidden pb-40">
       <DashboardHero />
       
-      <div className="space-y-12">
+      <div className="space-y-16">
         <StationGrid 
-          title="Featured" 
+          title="Featured Stations" 
           stations={featuredStations} 
         />
         
-        <div className="px-6 pb-12">
-          <div className="glass rounded-3xl p-8 text-center space-y-4">
-            <h3 className="text-xl font-bold text-white">More Coming Soon</h3>
-            <p className="text-sm text-white/40">We're constantly curating high-fidelity streams for your listening pleasure.</p>
+        <div className="px-8 flex justify-center">
+          <div className="glass-brass rounded-[3rem] p-12 text-center space-y-4 w-full border-brass/5">
+            <h3 className="text-2xl font-primary text-white">The Archive.</h3>
+            <p className="text-xs text-white/30 font-bold uppercase tracking-[0.3em]">Curating the Soul of Nagpur</p>
           </div>
         </div>
       </div>

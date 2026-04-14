@@ -9,84 +9,91 @@ interface StationCardProps {
   station: Station;
 }
 
+export function StationGrid({ stations, title }: { stations: Station[], title: string }) {
+  return (
+    <section className="space-y-12">
+      <div className="flex flex-col items-center text-center px-6 space-y-2">
+        <h2 className="text-3xl font-primary tracking-tight text-white flex items-center gap-3">
+          {title}
+        </h2>
+        <p className="text-[10px] text-brass font-bold uppercase tracking-[0.3em]">Analog Curations</p>
+      </div>
+      
+      <div className="flex flex-col gap-10 items-center px-6">
+        {stations.map((station) => (
+          <StationCard key={station.changeuuid} station={station} />
+        ))}
+      </div>
+      
+      <div className="flex justify-center px-6">
+        <button className="text-sm font-bold text-white/20 hover:text-white transition-colors flex items-center gap-2 group border-b border-transparent hover:border-white/10 pb-1">
+          Explore Archive <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function StationCard({ station }: StationCardProps) {
   const setStation = useRadioStore(state => state.setStation);
-  
-  // High-performance Selectors: Component ONLY re-renders if IT is the active item being played/paused
   const isPlayingAndActive = useRadioStore(state => 
     state.isPlaying && state.currentStation?.changeuuid === station.changeuuid
-  );
-  const isActive = useRadioStore(state => 
-    state.currentStation?.changeuuid === station.changeuuid
   );
 
   return (
     <motion.div
-      whileHover={{ y: -5 }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => setStation(station)}
-      className="flex-shrink-0 w-40 space-y-3 cursor-pointer group"
+      className="w-full max-w-[280px] space-y-6 cursor-pointer group flex flex-col items-center"
     >
-      <div className="relative aspect-square rounded-2xl overflow-hidden glass border-white/5 group-hover:border-white/20 transition-all">
-        {station.favicon ? (
-          <img src={station.favicon} alt={station.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-white/5">
-            <ListMusic className="w-10 h-10 text-white/10" />
-          </div>
-        )}
+      <div className="relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden glass-brass border-brass/10 group-hover:border-brass/30 transition-all shadow-2xl">
+        <motion.div 
+          layoutId={`image-${station.changeuuid}`}
+          className="w-full h-full"
+        >
+          {station.favicon ? (
+            <img src={station.favicon} alt={station.name} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-mahogany">
+              <ListMusic className="w-12 h-12 text-brass/20" />
+            </div>
+          )}
+        </motion.div>
         
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+        
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+          <div className="w-14 h-14 rounded-full glass-brass backdrop-blur-xl flex items-center justify-center border-brass/20 shadow-xl group-hover:scale-110 transition-transform">
             {isPlayingAndActive ? (
-              <div className="flex gap-1 items-end h-4">
+              <div className="flex gap-1.5 items-end h-5">
                 {[1, 2, 3].map(i => (
                   <motion.div
                     key={i}
-                    animate={{ height: ["4px", "16px", "8px"] }}
+                    animate={{ height: ["6px", "20px", "10px"] }}
                     transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
-                    className="w-1 bg-white rounded-full"
+                    className="w-1 bg-brass rounded-full"
                   />
                 ))}
               </div>
             ) : (
-              <Play className="w-6 h-6 fill-white text-white ml-1" />
+              <Play className="w-6 h-6 fill-brass text-brass ml-1" />
             )}
           </div>
         </div>
       </div>
-      <div className="space-y-0.5 px-1">
-        <h4 className="text-sm font-semibold truncate text-white/90 group-hover:text-white transition-colors uppercase tracking-tight">
+
+      <div className="space-y-2 text-center">
+        <motion.h4 
+          layoutId={`name-${station.changeuuid}`}
+          className="text-2xl font-primary text-white tracking-tight group-hover:text-brass transition-colors"
+        >
           {station.name}
-        </h4>
-        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">
-          {station.tags ? station.tags.split(',')[0] : "Maharashtra"}
+        </motion.h4>
+        <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em]">
+          {station.tags ? station.tags.split(',')[0] : "Retro Soul"}
         </p>
       </div>
     </motion.div>
-  );
-}
-
-
-export function StationGrid({ stations, title }: { stations: Station[], title: string }) {
-  return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between px-6">
-        <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-          {title}
-          <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-widest animate-pulse">Live</span>
-        </h2>
-        <button className="text-sm font-bold text-white/40 hover:text-white transition-colors flex items-center gap-1 group">
-          See All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
-      <div className="flex gap-4 overflow-x-auto pb-8 px-6 no-scrollbar snap-x">
-        {stations.map((station) => (
-          <div key={station.changeuuid} className="snap-start">
-            <StationCard station={station} />
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }

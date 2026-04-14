@@ -9,7 +9,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-primary: var(--font-marcellus);
   --font-heading: var(--font-sans);
+  --color-brass: var(--brass);
+  --color-amber: var(--amber);
+  --color-mahogany: var(--mahogany);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,6 +55,9 @@
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --brass: #D4AF37;
+  --amber: #FFB03B;
+  --mahogany: #1A0F0A;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -86,6 +93,9 @@
 .dark {
   --background: #000000;
   --foreground: oklch(0.985 0 0);
+  --brass: #D4AF37;
+  --amber: #FFB03B;
+  --mahogany: #1A0F0A;
   --card: oklch(0.205 0 0 / 20%);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0 / 80%);
@@ -122,8 +132,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground selection:bg-white/20;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-background text-foreground font-sans;
   }
   html {
     @apply font-sans antialiased;
@@ -131,21 +140,34 @@
   }
 }
 
-@layer utilities {
+@layer components {
   .glass {
-    @apply bg-white/5 backdrop-blur-2xl border border-white/10;
+    @apply bg-white/[0.03] backdrop-blur-3xl border border-white/5;
+  }
+  
+  .glass-brass {
+    background-color: color-mix(in srgb, var(--brass) 5%, transparent);
+    @apply backdrop-blur-3xl border border-brass/10;
+  }
+  
+  .font-primary {
+    font-family: var(--font-marcellus);
   }
   
   .glass-card {
     @apply bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl;
   }
+}
 
+@layer utilities {
   .text-muted {
     @apply text-foreground/60;
   }
 }
-
-@theme {
-  --color-glass: rgba(255, 255, 255, 0.05);
-  --color-glass-border: rgba(255, 255, 255, 0.1);
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

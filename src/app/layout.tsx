@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Marcellus, DM_Sans, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { AudioEngine } from "@/components/audio/AudioEngine";
 import { Player } from "@/components/player/Player";
 import { PWARegistration } from "@/components/pwa/PWARegistration";
+import { DeviceOptimizer } from "@/components/ui/DeviceOptimizer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const marcellus = Marcellus({
+  variable: "--font-marcellus",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
 });
 
@@ -45,15 +52,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-full flex flex-col bg-black text-white antialiased selection:bg-white/10`}>
+    <html lang="en" className="dark h-[100dvh] overflow-hidden">
+      <body className={`${marcellus.variable} ${dmSans.variable} ${geistMono.variable} font-sans h-full flex flex-col bg-black text-white antialiased selection:bg-white/10 overflow-hidden`}>
+        <DeviceOptimizer />
         <PWARegistration />
         <Script 
           src="https://cdn.jsdelivr.net/npm/hls.js@latest" 
           strategy="beforeInteractive"
         />
         <AudioEngine />
-        <main className="flex-1 pb-24">
+        <main className="flex-1 overflow-y-auto pb-32 no-scrollbar">
           {children}
         </main>
         <Player />
