@@ -1,58 +1,67 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <!-- Background Gradient: Deep Mahogany Wood -->
-    <radialGradient id="woodBg" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-      <stop offset="0%" stop-color="#3A1C14" />
-      <stop offset="70%" stop-color="#1A0D0A" />
-      <stop offset="100%" stop-color="#0A0503" />
+    <!-- Deep Mahogany Background Gradient -->
+    <radialGradient id="mahoganyBg" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#2D1A12" />
+      <stop offset="60%" stop-color="#1A0F0A" />
+      <stop offset="100%" stop-color="#0F0805" />
     </radialGradient>
-    
-    <!-- Outer Ring Gradient: Brushed Brass -->
-    <linearGradient id="brassOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+
+    <!-- Polished Brass Gradient for Ring and Text -->
+    <linearGradient id="brassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FCEABB" />
-      <stop offset="30%" stop-color="#F8B500" />
-      <stop offset="70%" stop-color="#B38006" />
-      <stop offset="100%" stop-color="#FCEABB" />
+      <stop offset="30%" stop-color="#D4AF37" />
+      <stop offset="60%" stop-color="#7A5C12" />
+      <stop offset="100%" stop-color="#D4AF37" />
     </linearGradient>
 
-    <!-- Inner Ring Gradient: Dark Brass shadow -->
-    <linearGradient id="brassInner" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#5B4009" />
-      <stop offset="50%" stop-color="#B38006" />
-      <stop offset="100%" stop-color="#F8B500" />
+    <!-- Bevel effect shadow -->
+    <linearGradient id="brassShadow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4B3608" />
+      <stop offset="100%" stop-color="#D4AF37" opacity="0.3" />
     </linearGradient>
 
-    <!-- Glowing amber for waves and text -->
-    <filter id="amberGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
+    <!-- Drop Shadow for Text -->
+    <filter id="premiumShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
+      <feOffset dx="0" dy="8" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.8" />
+      </feComponentTransfer>
       <feMerge>
-        <feMergeNode in="blur" />
+        <feMergeNode />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
+
+    <!-- Texture Overlay for Mahogany Wood -->
+    <filter id="woodGrain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.4" numOctaves="3" result="noise" />
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.1 0 0 0 0 0.05 0 0 0 0 0.02 0 0 0 0.08 0" result="texture" />
+      <feBlend in="SourceGraphic" in2="texture" mode="multiply" />
+    </filter>
   </defs>
 
-  <!-- Base Wood Panel -->
-  <rect width="512" height="512" rx="112" fill="url(#woodBg)" />
-
-  <!-- Outer Brass Ring -->
-  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#brassOuter)" stroke-width="16" />
+  <!-- Base Mahogany Circle -->
+  <circle cx="256" cy="256" r="250" fill="url(#mahoganyBg)" filter="url(#woodGrain)" />
   
-  <!-- Inner Brass Ring -->
-  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#brassInner)" stroke-width="6" />
+  <!-- Outer Brass Ring (Heavy Bevel) -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="url(#brassShadow)" stroke-width="24" />
+  <circle cx="256" cy="256" r="224" fill="none" stroke="url(#brassGradient)" stroke-width="12" />
 
-  <!-- Radio Waves -->
-  <g filter="url(#amberGlow)" stroke="#FFB03B" stroke-width="24" stroke-linecap="round" fill="none">
-    <!-- Top arch -->
-    <path d="M 176 160 Q 256 110 336 160" />
-    <!-- Middle arch -->
-    <path d="M 146 220 Q 256 160 366 220" />
-  </g>
+  <!-- Monogram RFM (Marcellus-style Serif) -->
+  <text 
+    x="256" 
+    y="310" 
+    font-family="serif" 
+    font-size="140" 
+    font-weight="normal" 
+    fill="url(#brassGradient)" 
+    text-anchor="middle" 
+    filter="url(#premiumShadow)"
+    style="font-style: normal; letter-spacing: -2px;"
+  >RFM</text>
 
-  <!-- Typography: RFM -->
-  <text x="256" y="360" font-family="'Playfair Display', Georgia, serif" font-weight="900" font-size="110" fill="#FFE5A3" text-anchor="middle" filter="url(#amberGlow)" letter-spacing="4">RFM</text>
-
-  <!-- Decorative Dial Indicator -->
-  <polygon points="256,400 240,440 272,440" fill="#F8B500" />
-  <line x1="256" y1="440" x2="256" y2="470" stroke="#F8B500" stroke-width="6" stroke-linecap="round" />
+  <!-- Subtitle Pulsing Dot -->
+  <circle cx="256" cy="360" r="4" fill="#D4AF37" opacity="0.6" />
 </svg>
