@@ -20,7 +20,7 @@ export function StationGrid({
   return (
     <section className="space-y-12">
       <div className="flex flex-col items-center text-center px-6 space-y-2">
-        <h2 className="text-3xl font-primary tracking-tight text-white flex items-center gap-3">
+        <h2 className="text-3xl font-primary tracking-tight text-foreground flex items-center gap-3">
           {title}
         </h2>
         <p className="text-[10px] text-brass font-bold uppercase tracking-[0.3em]">
@@ -46,7 +46,7 @@ export function StationGrid({
       </div>
 
       <div className="flex justify-center px-6">
-        <button className="text-sm font-bold text-white/20 hover:text-white transition-colors flex items-center gap-2 group border-b border-transparent hover:border-white/10 pb-1">
+        <button className="text-sm font-bold text-foreground/40 hover:text-foreground transition-colors flex items-center gap-2 group border-b border-transparent hover:border-foreground/10 pb-1">
           Explore Archive{" "}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
@@ -120,11 +120,11 @@ function StationCard({ station }: StationCardProps) {
       <div className="space-y-2 text-center">
         <motion.h4
           layoutId={`name-${station.changeuuid}`}
-          className="text-2xl font-primary text-white tracking-tight group-hover:text-brass transition-colors"
+          className="text-2xl font-primary text-foreground group-hover:text-brass transition-colors"
         >
           {station.name}
         </motion.h4>
-        <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em]">
+        <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.4em]">
           {station.tags ? station.tags.split(",")[0] : "Retro Soul"}
         </p>
       </div>

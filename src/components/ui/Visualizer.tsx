@@ -13,11 +13,11 @@ export function Visualizer({ isPlaying, count = 4 }: VisualizerProps) {
       {[...Array(count)].map((_, i) => (
         <motion.div
           key={i}
-          initial={{ height: "4px" }}
+          initial={{ scaleY: 0.3 }}
           animate={{
-            height: isPlaying 
-              ? ["4px", "12px", "6px", "10px", "4px"][i % 5] 
-              : "4px",
+            scaleY: isPlaying 
+              ? [0.3, 1, 0.5, 0.8, 0.3][i % 5] 
+              : 0.3,
           }}
           transition={{
             duration: 0.8,
@@ -25,7 +25,8 @@ export function Visualizer({ isPlaying, count = 4 }: VisualizerProps) {
             delay: i * 0.1,
             ease: "easeInOut",
           }}
-          className="w-[2px] bg-white rounded-full opacity-80"
+          style={{ transformOrigin: "bottom" }}
+          className="w-[2px] h-3 bg-foreground rounded-full opacity-80"
         />
       ))}
     </div>

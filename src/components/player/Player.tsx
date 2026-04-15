@@ -10,6 +10,7 @@ import {
   Volume2,
   Share2,
   ListMusic,
+  Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRadioStore } from "@/store/useRadioStore";
@@ -19,11 +20,13 @@ import { Slider } from "@/components/ui/slider";
 import { Portal } from "@/components/ui/portal";
 import { useHasHydrated } from "@/hooks/useHasHydrated";
 import { cn } from "@/lib/utils";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
 
 export function Player() {
   const hasHydrated = useHasHydrated();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const {
     currentStation,
     isPlaying,
@@ -32,6 +35,7 @@ export function Player() {
     setVolume,
     nextStation,
     previousStation,
+    visualizerStyle,
   } = useRadioStore();
 
   const handleShare = () => {
@@ -56,7 +60,8 @@ export function Player() {
             exit={{ y: 100, opacity: 0 }}
             style={{
               willChange: "transform, opacity",
-              transform: "translateZ(0)",
+              transform: "translate3d(0, 0, 0)",
+              backfaceVisibility: "hidden",
             }}
             onClick={() => setIsExpanded(true)}
             className="fixed bottom-6 left-6 right-6 h-20 glass-brass rounded-full flex items-center px-4 gap-4 cursor-pointer z-40 lg:max-w-md lg:left-1/2 lg:-translate-x-1/2 shadow-2xl border-brass/10"
@@ -79,12 +84,12 @@ export function Player() {
             </motion.div>
 
             <div className="flex-1 min-w-0">
-              <motion.h4 className="text-base font-primary leading-none text-white truncate">
+              <motion.h4 className="text-base font-primary leading-none text-foreground truncate">
                 {currentStation.name}
               </motion.h4>
               <div className="flex items-center gap-2 mt-1">
                 <Visualizer isPlaying={isPlaying} />
-                <p className="text-[10px] text-brass/60 font-bold uppercase tracking-[0.2em] leading-none">
+                <p className="text-[10px] text-brass dark:text-brass/60 font-bold uppercase tracking-[0.2em] leading-none">
                   Live Pulse
                 </p>
               </div>
@@ -96,7 +101,7 @@ export function Player() {
                   e.stopPropagation();
                   handleShare();
                 }}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/40 hover:text-white"
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/60 hover:text-white"
               >
                 <Share2 className="w-5 h-5" strokeWidth={1.5} />
               </button>
@@ -131,33 +136,49 @@ export function Player() {
               stiffness: 300,
               mass: 0.8,
             }}
-            style={{ willChange: "transform", transform: "translateZ(0)" }}
-            className="fixed inset-0 h-dvh bg-black z-50 flex flex-col p-6 md:p-12 overflow-hidden"
+            style={{ 
+              willChange: "transform", 
+              transform: "translate3d(0, 0, 0)",
+              backfaceVisibility: "hidden" 
+            }}
+            className="fixed inset-0 h-dvh bg-background z-50 flex flex-col p-6 md:p-12 overflow-hidden"
           >
             {/* Grab Handle */}
             <button
               onClick={() => setIsExpanded(false)}
-              className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+              className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-foreground/10 rounded-full hover:bg-foreground/20 transition-colors"
             />
 
-            <div className="flex justify-between items-center mt-6 shrink-0">
-              <button
-                onClick={() => setIsExpanded(false)}
-                className="text-white/40 hover:text-white transition-colors"
-              >
-                <ChevronDown className="w-8 h-8" strokeWidth={1} />
-              </button>
+            <div className="grid grid-cols-3 items-center mt-6 shrink-0">
+              <div className="flex justify-start">
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="text-foreground/40 hover:text-foreground transition-colors"
+                >
+                  <ChevronDown className="w-8 h-8" strokeWidth={1} />
+                </button>
+              </div>
+              
               <div className="text-center">
                 <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-brass">
                   Analog Player
                 </p>
               </div>
-              <button 
-                onClick={handleShare}
-                className="text-white/40 hover:text-white transition-colors p-2"
-              >
-                <Share2 className="w-6 h-6" strokeWidth={1} />
-              </button>
+
+              <div className="flex justify-end items-center gap-1">
+                <button 
+                  onClick={handleShare}
+                  className="text-foreground/60 hover:text-foreground transition-colors p-2"
+                >
+                  <Share2 className="w-6 h-6" strokeWidth={1} />
+                </button>
+                <button 
+                  onClick={() => setShowSettings(true)}
+                  className="text-foreground/60 hover:text-foreground transition-colors p-2"
+                >
+                  <Settings className="w-6 h-6" strokeWidth={1} />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 min-h-0 flex flex-col items-center justify-between py-4 max-w-lg mx-auto w-full gap-4">
@@ -186,13 +207,13 @@ export function Player() {
                       "w-1.5 h-1.5 rounded-full",
                       isPlaying
                         ? "bg-amber animate-pulse shadow-[0_0_12px_rgba(255,176,59,0.5)]"
-                        : "bg-white/10",
+                        : "bg-foreground/10",
                     )}
                   />
                   <span
                     className={cn(
                       "text-[9px] font-bold uppercase tracking-[0.3em]",
-                      isPlaying ? "text-amber" : "text-white/20",
+                      isPlaying ? "text-amber" : "text-foreground/40",
                     )}
                   >
                     Broadcasting
@@ -201,12 +222,12 @@ export function Player() {
 
                 <motion.h2
                   layoutId={`name-${currentStation.changeuuid}`}
-                  className="text-4xl md:text-5xl font-primary text-white tracking-tight leading-tight"
+                  className="text-4xl md:text-5xl font-primary text-foreground tracking-tight leading-tight"
                 >
                   {currentStation.name}
                 </motion.h2>
 
-                <p className="text-sm text-white/40 font-medium font-sans">
+                <p className="text-sm text-foreground/60 font-medium font-sans">
                   {currentStation.tags
                     ? currentStation.tags.split(",")[0]
                     : "Maharashtra"}{" "}
@@ -221,6 +242,7 @@ export function Player() {
                     <AudioSpectrum
                       width={400}
                       height={100}
+                      visualizerStyle={visualizerStyle}
                       className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                     />
                     <motion.button
@@ -243,7 +265,7 @@ export function Player() {
                     <div className="flex-1">
                       <button
                         onClick={previousStation}
-                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-brass transition-all py-3 w-full text-left"
+                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-foreground/50 hover:text-brass transition-all py-3 w-full text-left"
                       >
                         Prev
                       </button>
@@ -257,7 +279,7 @@ export function Player() {
                           "w-10 h-10 flex items-center justify-center transition-all hover:scale-110",
                           showVolume
                             ? "text-brass scale-110"
-                            : "text-brass/30 hover:text-brass",
+                            : "text-brass/60 hover:text-brass",
                         )}
                       >
                         <Volume2
@@ -281,7 +303,7 @@ export function Player() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowVolume(false)}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm"
                             style={{ zIndex: 1000 }}
                           />
 
@@ -296,12 +318,13 @@ export function Player() {
                               damping: 25,
                               stiffness: 400,
                             }}
-                            className="fixed left-1/2 -translate-x-1/2 bottom-40 w-full max-w-[360px] rounded-[2.5rem] border border-brass/30 px-8 py-7 shadow-[0_30px_100px_rgba(0,0,0,0.8)]"
+                            className="fixed left-1/2 -translate-x-1/2 bottom-40 w-full max-w-[360px] rounded-[2.5rem] border border-brass/30 px-8 py-7 shadow-[0_30px_100px_rgba(0,0,0,0.5)]"
                             style={{
                               background:
-                                "linear-gradient(180deg, rgba(25, 20, 15, 0.95) 0%, rgba(10, 8, 5, 0.98) 100%)",
-                              backdropFilter: "blur(40px) saturate(200%)",
+                                "linear-gradient(180deg, var(--background) 0%, var(--background) 100%)",
+                              backdropFilter: "blur(20px) saturate(180%)",
                               zIndex: 1001,
+                              transform: "translate3d(0, 0, 0)",
                             }}
                           >
                             <div className="space-y-6">
@@ -310,7 +333,7 @@ export function Player() {
                                   <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-brass">
                                     Master Gain
                                   </h3>
-                                  <p className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em]">
+                                  <p className="text-[8px] font-medium text-foreground/30 uppercase tracking-[0.2em]">
                                     Lossless Audio Engine
                                   </p>
                                 </div>
@@ -339,7 +362,7 @@ export function Player() {
                               <div className="flex justify-center">
                                 <button
                                   onClick={() => setShowVolume(false)}
-                                  className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-white transition-all"
+                                  className="text-[9px] font-bold uppercase tracking-[0.4em] text-foreground/20 hover:text-foreground transition-all"
                                 >
                                   Close Control
                                 </button>
@@ -353,7 +376,7 @@ export function Player() {
                     <div className="flex-1">
                       <button
                         onClick={nextStation}
-                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-brass transition-all py-3 w-full text-right"
+                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-foreground/50 hover:text-brass transition-all py-3 w-full text-right"
                       >
                         Next
                       </button>
@@ -363,6 +386,13 @@ export function Player() {
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Settings Overlay */}
+      <AnimatePresence>
+        {showSettings && (
+          <SettingsPanel onClose={() => setShowSettings(false)} />
         )}
       </AnimatePresence>
     </>

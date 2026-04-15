@@ -8,7 +8,7 @@ interface RadioState {
   isPlaying: boolean;
   volume: number;
   stations: Station[];
-  analyser: AnalyserNode | null;
+  visualizerStyle: "classic" | "colorful";
   
   // Actions
   setStation: (station: Station) => void;
@@ -17,6 +17,7 @@ interface RadioState {
   setVolume: (volume: number) => void;
   setStations: (stations: Station[]) => void;
   setAnalyser: (analyser: AnalyserNode | null) => void;
+  setVisualizerStyle: (style: "classic" | "colorful") => void;
   nextStation: () => void;
   previousStation: () => void;
 }
@@ -29,6 +30,7 @@ export const useRadioStore = create<RadioState>()(
       volume: 80,
       stations: FALLBACK_STATIONS,
       analyser: null,
+      visualizerStyle: "classic",
 
       setStation: (station) => set({ currentStation: station, isPlaying: true }),
       togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
@@ -36,6 +38,7 @@ export const useRadioStore = create<RadioState>()(
       setVolume: (volume) => set({ volume }),
       setStations: (stations) => set({ stations }),
       setAnalyser: (analyser) => set({ analyser }),
+      setVisualizerStyle: (style) => set({ visualizerStyle: style }),
       
       nextStation: () => set((state) => {
         if (state.stations.length === 0) return state;
@@ -69,7 +72,8 @@ export const useRadioStore = create<RadioState>()(
       name: "radio-storage",
       partialize: (state) => ({ 
         currentStation: state.currentStation, 
-        volume: state.volume 
+        volume: state.volume,
+        visualizerStyle: state.visualizerStyle
       }),
     }
   )

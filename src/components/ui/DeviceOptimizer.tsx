@@ -25,7 +25,7 @@ export function DeviceOptimizer() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-8 text-center"
+          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex items-center justify-center p-8 text-center"
         >
           <div className="max-w-md space-y-8">
             <motion.div
@@ -40,27 +40,27 @@ export function DeviceOptimizer() {
             </motion.div>
 
             <div className="space-y-4">
-              <h2 className="text-4xl font-primary text-white tracking-tight leading-tight">
+              <h2 className="text-4xl font-primary text-foreground tracking-tight leading-tight">
                 Designed for the <span className="text-brass">Analog Hand.</span>
               </h2>
-              <p className="text-lg text-white/40 font-medium font-sans px-4">
+              <p className="text-lg text-foreground/40 font-medium font-sans px-4">
                 RFM is optimized for tactile, touch-first interaction. For the ultimate audio experience, please open this on your 
-                <span className="text-white/60"> iPad, iPhone, or Android device.</span>
+                <span className="text-foreground/60"> iPad, iPhone, or Android device.</span>
               </p>
             </div>
 
             <div className="flex items-center justify-center gap-8 pt-4">
-              <div className="flex flex-col items-center gap-2 text-white/20">
+              <div className="flex flex-col items-center gap-2 text-foreground/20">
                 <Smartphone className="w-6 h-6" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Mobile</span>
               </div>
-              <div className="w-px h-8 bg-white/5" />
+              <div className="w-px h-8 bg-foreground/5" />
               <div className="flex flex-col items-center gap-2 text-brass/40">
                 <Tablet className="w-6 h-6" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">iPad</span>
               </div>
-              <div className="w-px h-8 bg-white/5" />
-              <div className="flex flex-col items-center gap-2 text-white/20">
+              <div className="w-px h-8 bg-foreground/5" />
+              <div className="flex flex-col items-center gap-2 text-foreground/20">
                 <Monitor className="w-8 h-8 opacity-20" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Desktop</span>
               </div>
@@ -70,7 +70,7 @@ export function DeviceOptimizer() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsVisible(false)}
-              className="px-8 py-3 rounded-full border border-white/10 hover:border-white/20 text-white/40 hover:text-white transition-all text-xs font-bold uppercase tracking-[0.2em]"
+              className="px-8 py-3 rounded-full border border-foreground/10 hover:border-foreground/20 text-foreground/40 hover:text-foreground transition-all text-xs font-bold uppercase tracking-[0.2em]"
             >
               Continue Anyway
             </motion.button>

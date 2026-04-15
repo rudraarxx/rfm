@@ -14,9 +14,17 @@ export function AudioEngine() {
   const hlsRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const { currentStation, isPlaying, volume, setIsPlaying, setAnalyser } = useRadioStore();
+  const { 
+    currentStation, 
+    isPlaying, 
+    volume, 
+    setIsPlaying, 
+    setAnalyser,
+    nextStation,
+    previousStation
+  } = useRadioStore();
 
-  // 1. Initialize audio element
+  // 1. Initialize audio element and event listeners
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
@@ -25,6 +33,9 @@ export function AudioEngine() {
     }
     
     const audio = audioRef.current;
+    
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
     
     const handleError = (e: ErrorEvent | Event) => {
       const target = e.target as HTMLAudioElement;
@@ -37,9 +48,13 @@ export function AudioEngine() {
       }
     };
 
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
     audio.addEventListener('error', handleError);
     
     return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('error', handleError);
       audio.pause();
       if (hlsRef.current) {
@@ -54,16 +69,45 @@ export function AudioEngine() {
       audio.load();
       setAnalyser(null);
     };
-  }, [setAnalyser]);
+  }, [setIsPlaying, setAnalyser]);
 
-  // 2. Sync Volume
+  // 2. MediaSession synchronization
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+
+    if (currentStation) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentStation.name,
+        artist: currentStation.tags || "Nagpur Pulse Radio",
+        album: "RFM Analog Player",
+        artwork: [
+          { src: currentStation.favicon || "/icons/icon.svg", sizes: "512x512", type: "image/png" }
+        ]
+      });
+    }
+
+    navigator.mediaSession.setActionHandler('play', () => setIsPlaying(true));
+    navigator.mediaSession.setActionHandler('pause', () => setIsPlaying(false));
+    navigator.mediaSession.setActionHandler('nexttrack', () => nextStation());
+    navigator.mediaSession.setActionHandler('previoustrack', () => previousStation());
+
+    // Cleanup handlers
+    return () => {
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+    };
+  }, [currentStation, setIsPlaying, nextStation, previousStation]);
+
+  // 3. Sync Volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
 
-  // 3. Main Audio Control
+  // 4. Main Audio Control
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;

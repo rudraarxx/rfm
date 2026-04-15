@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Marcellus, DM_Sans, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AudioEngine } from "@/components/audio/AudioEngine";
 import { Player } from "@/components/player/Player";
 import { PWARegistration } from "@/components/pwa/PWARegistration";
@@ -53,39 +54,42 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-[100dvh] overflow-hidden">
-      <body className={`${marcellus.variable} ${dmSans.variable} ${geistMono.variable} font-sans h-full flex flex-col bg-black text-white antialiased selection:bg-white/10 overflow-hidden`}>
-        <DeviceOptimizer />
-        <PWARegistration />
-        <Script 
-          src="https://cdn.jsdelivr.net/npm/hls.js@latest" 
-          strategy="beforeInteractive"
-        />
-        <AudioEngine />
-        <main className="flex-1 overflow-y-auto pb-32 no-scrollbar">
-          {children}
-        </main>
-        <Player />
-        <Toaster 
-          theme="dark" 
-          position="top-center" 
-          closeButton 
-          richColors={false}
-          toastOptions={{
-            style: {
-              background: "rgba(26, 15, 10, 0.95)",
-              backdropFilter: "blur(40px)",
-              border: "1px solid rgba(212, 175, 55, 0.2)",
-              color: "#FFFFFF",
-              borderRadius: "1rem",
-              fontFamily: "var(--font-marcellus)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-            },
-            className: "glass-brass",
-          }}
-        />
+    <html lang="en" className="h-dvh overflow-hidden" suppressHydrationWarning>
+      <body
+        className={`${marcellus.variable} ${dmSans.variable} ${geistMono.variable} font-sans h-full flex flex-col bg-background text-foreground antialiased selection:bg-brass/20 overflow-hidden`}
+      >
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <DeviceOptimizer />
+          <PWARegistration />
+          <Script
+            src="https://cdn.jsdelivr.net/npm/hls.js@latest"
+            strategy="beforeInteractive"
+          />
+          <AudioEngine />
+          <main className="flex-1 overflow-y-auto pb-32 no-scrollbar">
+            {children}
+          </main>
+          <Player />
+          <Toaster
+            theme="dark"
+            position="top-center"
+            closeButton
+            richColors={false}
+            toastOptions={{
+              style: {
+                background: "var(--mahogany)",
+                backdropFilter: "blur(40px)",
+                border: "1px solid var(--brass)",
+                color: "#FFFFFF",
+                borderRadius: "1rem",
+                fontFamily: "var(--font-marcellus)",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+              },
+              className: "glass-brass",
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );
 }
-
