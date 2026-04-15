@@ -146,8 +146,8 @@
   }
   
   .glass-brass {
-    background-color: color-mix(in srgb, var(--brass) 5%, transparent);
-    @apply backdrop-blur-3xl border border-brass/10;
+    background-color: color-mix(in srgb, var(--brass) 12%, transparent);
+    @apply backdrop-blur-xl border border-brass/20;
   }
   
   .font-primary {

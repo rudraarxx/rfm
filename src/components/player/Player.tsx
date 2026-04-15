@@ -56,7 +56,8 @@ export function Player() {
             exit={{ y: 100, opacity: 0 }}
             style={{
               willChange: "transform, opacity",
-              transform: "translateZ(0)",
+              transform: "translate3d(0, 0, 0)",
+              backfaceVisibility: "hidden",
             }}
             onClick={() => setIsExpanded(true)}
             className="fixed bottom-6 left-6 right-6 h-20 glass-brass rounded-full flex items-center px-4 gap-4 cursor-pointer z-40 lg:max-w-md lg:left-1/2 lg:-translate-x-1/2 shadow-2xl border-brass/10"
@@ -96,7 +97,7 @@ export function Player() {
                   e.stopPropagation();
                   handleShare();
                 }}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/40 hover:text-white"
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/60 hover:text-white"
               >
                 <Share2 className="w-5 h-5" strokeWidth={1.5} />
               </button>
@@ -131,7 +132,11 @@ export function Player() {
               stiffness: 300,
               mass: 0.8,
             }}
-            style={{ willChange: "transform", transform: "translateZ(0)" }}
+            style={{ 
+              willChange: "transform", 
+              transform: "translate3d(0, 0, 0)",
+              backfaceVisibility: "hidden" 
+            }}
             className="fixed inset-0 h-dvh bg-black z-50 flex flex-col p-6 md:p-12 overflow-hidden"
           >
             {/* Grab Handle */}
@@ -154,7 +159,7 @@ export function Player() {
               </div>
               <button 
                 onClick={handleShare}
-                className="text-white/40 hover:text-white transition-colors p-2"
+                className="text-white/60 hover:text-white transition-colors p-2"
               >
                 <Share2 className="w-6 h-6" strokeWidth={1} />
               </button>
@@ -192,7 +197,7 @@ export function Player() {
                   <span
                     className={cn(
                       "text-[9px] font-bold uppercase tracking-[0.3em]",
-                      isPlaying ? "text-amber" : "text-white/20",
+                      isPlaying ? "text-amber" : "text-white/40",
                     )}
                   >
                     Broadcasting
@@ -206,7 +211,7 @@ export function Player() {
                   {currentStation.name}
                 </motion.h2>
 
-                <p className="text-sm text-white/40 font-medium font-sans">
+                <p className="text-sm text-white/60 font-medium font-sans">
                   {currentStation.tags
                     ? currentStation.tags.split(",")[0]
                     : "Maharashtra"}{" "}
@@ -243,7 +248,7 @@ export function Player() {
                     <div className="flex-1">
                       <button
                         onClick={previousStation}
-                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-brass transition-all py-3 w-full text-left"
+                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/50 hover:text-brass transition-all py-3 w-full text-left"
                       >
                         Prev
                       </button>
@@ -257,7 +262,7 @@ export function Player() {
                           "w-10 h-10 flex items-center justify-center transition-all hover:scale-110",
                           showVolume
                             ? "text-brass scale-110"
-                            : "text-brass/30 hover:text-brass",
+                            : "text-brass/60 hover:text-brass",
                         )}
                       >
                         <Volume2
@@ -299,9 +304,10 @@ export function Player() {
                             className="fixed left-1/2 -translate-x-1/2 bottom-40 w-full max-w-[360px] rounded-[2.5rem] border border-brass/30 px-8 py-7 shadow-[0_30px_100px_rgba(0,0,0,0.8)]"
                             style={{
                               background:
-                                "linear-gradient(180deg, rgba(25, 20, 15, 0.95) 0%, rgba(10, 8, 5, 0.98) 100%)",
-                              backdropFilter: "blur(40px) saturate(200%)",
+                                "linear-gradient(180deg, rgba(25, 20, 15, 0.9) 0%, rgba(10, 8, 5, 0.95) 100%)",
+                              backdropFilter: "blur(20px) saturate(180%)",
                               zIndex: 1001,
+                              transform: "translate3d(0, 0, 0)",
                             }}
                           >
                             <div className="space-y-6">
@@ -353,7 +359,7 @@ export function Player() {
                     <div className="flex-1">
                       <button
                         onClick={nextStation}
-                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/20 hover:text-brass transition-all py-3 w-full text-right"
+                        className="text-[9px] font-bold uppercase tracking-[0.4em] text-white/50 hover:text-brass transition-all py-3 w-full text-right"
                       >
                         Next
                       </button>

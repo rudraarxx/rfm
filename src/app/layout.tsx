@@ -53,12 +53,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-[100dvh] overflow-hidden">
-      <body className={`${marcellus.variable} ${dmSans.variable} ${geistMono.variable} font-sans h-full flex flex-col bg-black text-white antialiased selection:bg-white/10 overflow-hidden`}>
+    <html lang="en" className="dark h-dvh overflow-hidden">
+      <body
+        className={`${marcellus.variable} ${dmSans.variable} ${geistMono.variable} font-sans h-full flex flex-col bg-black text-white antialiased selection:bg-white/10 overflow-hidden`}
+      >
         <DeviceOptimizer />
         <PWARegistration />
-        <Script 
-          src="https://cdn.jsdelivr.net/npm/hls.js@latest" 
+        <Script
+          src="https://cdn.jsdelivr.net/npm/hls.js@latest"
           strategy="beforeInteractive"
         />
         <AudioEngine />
@@ -66,10 +68,10 @@ export default function RootLayout({
           {children}
         </main>
         <Player />
-        <Toaster 
-          theme="dark" 
-          position="top-center" 
-          closeButton 
+        <Toaster
+          theme="dark"
+          position="top-center"
+          closeButton
           richColors={false}
           toastOptions={{
             style: {
@@ -88,4 +90,3 @@ export default function RootLayout({
     </html>
   );
 }
-

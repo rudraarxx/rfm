@@ -69,9 +69,7 @@ export function AudioSpectrum({
         const x = i * (barWidth + gap);
         const yTop = centerY - actualBarHeight / 2;
 
-        // Draw Glow
-        ctx.shadowBlur = 15 * percent;
-        ctx.shadowColor = color;
+        // Remove expensive shadowBlur
         
         // Draw Bar
         ctx.fillStyle = color;
@@ -80,8 +78,6 @@ export function AudioSpectrum({
         // Rounded rectangle for the bar
         drawRoundedRect(ctx, x, yTop, barWidth, actualBarHeight, barWidth / 2);
         ctx.fill();
-        
-        ctx.shadowBlur = 0;
       }
 
       animationRef.current = requestAnimationFrame(render);
