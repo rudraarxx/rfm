@@ -53,11 +53,11 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #FBF8EF;
   --foreground: oklch(0.145 0 0);
   --brass: #D4AF37;
-  --amber: #FFB03B;
-  --mahogany: #1A0F0A;
+  --amber: #BD8D3D;
+  --mahogany: #2D1B14;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -142,12 +142,12 @@
 
 @layer components {
   .glass {
-    @apply bg-white/[0.03] backdrop-blur-3xl border border-white/5;
+    @apply bg-white/40 dark:bg-white/[0.03] backdrop-blur-3xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-none;
   }
   
   .glass-brass {
     background-color: color-mix(in srgb, var(--brass) 12%, transparent);
-    @apply backdrop-blur-xl border border-brass/20;
+    @apply backdrop-blur-xl border border-brass/30 dark:border-brass/20 shadow-lg shadow-brass/5 dark:shadow-none;
   }
   
   .font-primary {
@@ -155,7 +155,7 @@
   }
   
   .glass-card {
-    @apply bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl;
+    @apply bg-white/40 dark:bg-white/5 backdrop-blur-3xl border border-black/5 dark:border-white/10 rounded-2xl shadow-2xl dark:shadow-none;
   }
 }
 

@@ -17,8 +17,8 @@ export default async function Home() {
             <div className="absolute top-4 right-4 bg-brass/10 border border-brass/20 px-3 py-1 rounded-full">
               <p className="text-[8px] font-bold text-brass uppercase tracking-[0.2em]">Coming Soon</p>
             </div>
-            <h3 className="text-2xl font-primary text-white">The Archive.</h3>
-            <p className="text-xs text-white/30 font-bold uppercase tracking-[0.3em]">
+            <h3 className="text-2xl font-primary text-foreground">The Archive.</h3>
+            <p className="text-[10px] text-foreground/30 font-bold uppercase tracking-[0.3em]">
               Curating the Soul of Nagpur
             </p>
           </div>

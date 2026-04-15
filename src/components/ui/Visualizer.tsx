@@ -26,7 +26,7 @@ export function Visualizer({ isPlaying, count = 4 }: VisualizerProps) {
             ease: "easeInOut",
           }}
           style={{ transformOrigin: "bottom" }}
-          className="w-[2px] h-3 bg-white rounded-full opacity-80"
+          className="w-[2px] h-3 bg-foreground rounded-full opacity-80"
         />
       ))}
     </div>

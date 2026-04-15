@@ -9,6 +9,7 @@ interface AudioSpectrumProps {
   barWidth?: number;
   gap?: number;
   color?: string;
+  visualizerStyle?: "classic" | "colorful";
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export function AudioSpectrum({
   barWidth = 3,
   gap = 2,
   color = "#D4AF37", // Theme Brass
+  visualizerStyle = "classic",
   className = "",
 }: AudioSpectrumProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -39,6 +41,12 @@ export function AudioSpectrum({
     const barCount = Math.floor(width / (barWidth + gap));
     const centerY = height / 2;
 
+    // Pre-calculate gradient for colorful mode
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, "#00F2FF"); // Neon Cyan
+    gradient.addColorStop(0.5, "#B026FF"); // Purple midpoint
+    gradient.addColorStop(1, "#FF007A"); // Neon Pink
+
     const render = () => {
       if (!analyser || !isPlaying) {
         ctx.clearRect(0, 0, width, height);
@@ -53,29 +61,20 @@ export function AudioSpectrum({
       ctx.clearRect(0, 0, width, height);
 
       for (let i = 0; i < barCount; i++) {
-        // Distance from center (0 at middle, 1 at edges)
         const distFromCenter = Math.abs(i - barCount / 2) / (barCount / 2);
-        
-        // Map frequency: center of canvas gets bass (index 0), edges get treble
         const dataIndex = Math.floor(distFromCenter * (bufferLength * 0.7));
         const value = dataArray[dataIndex] || 0;
         const percent = value / 255;
-
-        // Quadratic fade out towards edges
         const fadeScale = Math.pow(1 - distFromCenter, 1.5);
-
         const actualBarHeight = Math.max(2, percent * height * 0.9 * fadeScale);
 
         const x = i * (barWidth + gap);
         const yTop = centerY - actualBarHeight / 2;
 
-        // Remove expensive shadowBlur
-        
         // Draw Bar
-        ctx.fillStyle = color;
+        ctx.fillStyle = visualizerStyle === "colorful" ? gradient : color;
         ctx.globalAlpha = 0.3 + percent * 0.7; 
         
-        // Rounded rectangle for the bar
         drawRoundedRect(ctx, x, yTop, barWidth, actualBarHeight, barWidth / 2);
         ctx.fill();
       }
@@ -90,7 +89,7 @@ export function AudioSpectrum({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [analyser, isPlaying, width, height, color, barWidth, gap]);
+  }, [analyser, isPlaying, width, height, color, barWidth, gap, visualizerStyle]);
 
   // Helper to draw rounded bars
   const drawRoundedRect = (
