@@ -28,135 +28,98 @@ import com.rfm.nagpurpulse.presentation.theme.HimalayanCharcoal
 import com.rfm.nagpurpulse.presentation.theme.HimalayanDesertSand
 import com.rfm.nagpurpulse.presentation.theme.HimalayanGrey
 
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.font.FontWeight
+import com.rfm.nagpurpulse.presentation.theme.DeepNavy
+import com.rfm.nagpurpulse.presentation.theme.HimalayanWhite
+import com.rfm.nagpurpulse.presentation.theme.HimalayanGrey
+
 @Composable
 fun HomeContent(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val stations by viewModel.displayedStations.collectAsState()
-    val isLoading by viewModel.isLoadingStations.collectAsState()
-    val error by viewModel.stationsError.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
     val currentStation by viewModel.currentStation.collectAsState()
-    val isPlaying by viewModel.isPlaying.collectAsState()
-    val isBuffering by viewModel.isBuffering.collectAsState()
+
+    // Partition stations for the two sections- just taking slices for the demo layout
+    val recentlyListened = stations.take(6)
+    val recommended = stations.drop(6).take(15)
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(HimalayanCharcoal)
+            .background(DeepNavy)
             .statusBarsPadding()
     ) {
-        // Step 1: Subtle Topographic Background Pattern
-        TopographicBackground(modifier = Modifier.fillMaxSize())
-
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 24.dp)
         ) {
-            // Top Nav-Comms Bar
+            // Expanded Search Bar
             item {
-                Row(
+                HomeSearchBar(
+                    query = searchQuery,
+                    onQueryChange = { viewModel.searchStations(it) },
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+            }
+
+            // Recently Listened Section
+            item {
+                Text(
+                    text = "Recently Listened",
+                    color = HimalayanWhite,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(bottom = 32.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.SignalCellularAlt,
-                            contentDescription = null,
-                            tint = HimalayanDesertSand,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "NAV-COMMS V1.0",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = HimalayanDesertSand,
-                            letterSpacing = 1.sp
+                    items(recentlyListened) { station ->
+                        RecentStationItem(
+                            station = station,
+                            onClick = { viewModel.selectStation(station) }
                         )
                     }
-                    Text(
-                        text = "SIGNAL: HIGH-GAIN",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = HimalayanGrey,
-                        fontSize = 10.sp
-                    )
                 }
             }
 
-            // Central Tuning Dial
+            // Recommend for you Section
             item {
-                HimalayanFrequencyDial(
-                    frequency = currentStation?.name?.take(5) ?: "104.2",
-                    mhz = "MHZ FM",
-                    isPlaying = isPlaying,
-                    modifier = Modifier.size(320.dp)
+                Text(
+                    text = "Recommend for you",
+                    color = HimalayanWhite,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
 
-            // Integrated Controls (The Cockpit Area)
-            item {
-                MiniPlayer(
-                    station = currentStation,
-                    isPlaying = isPlaying,
-                    isBuffering = isBuffering,
-                    onPlayPauseClick = { viewModel.togglePlay() },
-                    onNextClick = { viewModel.playNext() },
-                    onPreviousClick = { viewModel.playPrevious() },
-                    onClick = { /* Could open bottom sheet */ },
-                    modifier = Modifier.padding(bottom = 24.dp)
+            items(recommended) { station ->
+                RecommendedStationItem(
+                    station = station,
+                    onClick = { viewModel.selectStation(station) }
                 )
             }
 
-            // Station List Header
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = "STATION FEED", style = MaterialTheme.typography.labelSmall, color = HimalayanGrey)
-                    Text(text = "REGION: NAGPUR_PULSE", style = MaterialTheme.typography.labelSmall, color = HimalayanGrey)
-                }
-            }
-
-            // Station Cards
-            if (isLoading) {
-                item {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(32.dp),
-                        color = HimalayanDesertSand
-                    )
-                }
-            } else if (error != null) {
-                item {
-                    Text(
-                        text = error ?: "An error occurred",
-                        modifier = Modifier.padding(32.dp),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            } else {
-                itemsIndexed(stations) { index, station ->
-                    RadioCard(
-                        station = station,
-                        index = index,
-                        isActive = currentStation?.id == station.id,
-                        onClick = { viewModel.selectStation(station) }
-                    )
-                }
-            }
-            
-            // Padding at bottom for navigation bar
+            // Bottom Spacer
             item {
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }
 }
+
 
 @Composable
 fun TopographicBackground(modifier: Modifier = Modifier) {

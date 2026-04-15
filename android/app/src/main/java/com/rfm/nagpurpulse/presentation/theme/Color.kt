@@ -11,6 +11,12 @@ val HimalayanGrey = Color(0xFF8E8E8E)
 val HimalayanAmber = Color(0xFFFFB300)
 val HimalayanRed = Color(0xFFE94057) // Keeping for alerts/active needles
 
+// Redesign Palette
+val DeepNavy = Color(0xFF0F0B1E)
+val CardPurple = Color(0xFF1A1430)
+val SearchGrey = Color(0xFF251F3D)
+
+
 // Legacy / Support Colors (Optional)
 val Pink = Color(0xFFE94057)
 val Orange = Color(0xFFF27121)

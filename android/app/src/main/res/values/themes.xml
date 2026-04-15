@@ -14,6 +14,17 @@
         <item name="chipStyle">@style/Widget.RFM.Chip</item>
     </style>
 
+    <style name="Theme.RFM.Starting" parent="Theme.SplashScreen">
+        <!-- The background color of the Android 12 Splash Screen -->
+        <item name="windowSplashScreenBackground">#EFE8FE</item>
+        <!-- The center icon (radio) -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_vintage_radio</item>
+        <!-- Explicitly set the icon background to transparent to avoid the system circle -->
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <!-- The theme to load for the activity itself after the splash screen is drawn -->
+        <item name="postSplashScreenTheme">@style/Theme.RFM</item>
+    </style>
+
     <style name="Widget.RFM.Chip" parent="Widget.MaterialComponents.Chip.Filter">
         <item name="android:textColor">@color/chip_text_selector</item>
         <item name="chipBackgroundColor">@color/chip_bg_selector</item>

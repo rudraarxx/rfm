@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Nagpur Pulse</string>
-    <string name="app_hero_title">Nagpur Pulse.</string>
+    <string name="app_name">Retro FM</string>
+    <string name="app_hero_title">Retro FM.</string>
     <string name="app_tagline">Premium radio streaming for the heart of India</string>
     <string name="live_from_nagpur">Live from Nagpur, MH</string>
     <string name="featured_stations">Featured Stations</string>

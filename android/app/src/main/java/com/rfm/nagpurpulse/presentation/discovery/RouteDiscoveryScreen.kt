@@ -1,6 +1,10 @@
 package com.rfm.nagpurpulse.presentation.discovery
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +54,7 @@ fun RouteDiscoveryScreen(
     val stations by viewModel.displayedStations.collectAsState()
     val isLoading by viewModel.isLoadingStations.collectAsState()
     val favoriteIds by viewModel.favoriteIds.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     var isStateExpanded by remember { mutableStateOf(false) }
     var isCityExpanded by remember { mutableStateOf(false) }
@@ -71,7 +76,12 @@ fun RouteDiscoveryScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    HimalayanSearchUnit(modifier = Modifier.padding(vertical = 16.dp))
+                    HimalayanSearchUnit(
+                        query = searchQuery,
+                        onQueryChange = { viewModel.searchStations(it) },
+                        onSearch = { viewModel.searchStations(it) },
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
                 }
 
                 item {
@@ -321,7 +331,12 @@ fun HimalayanDiscoveryTopBar() {
 }
 
 @Composable
-fun HimalayanSearchUnit(modifier: Modifier = Modifier) {
+fun HimalayanSearchUnit(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -330,18 +345,6 @@ fun HimalayanSearchUnit(modifier: Modifier = Modifier) {
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(Color(0xFF2C2C2C), RoundedCornerShape(2.dp))
-                .clickable { },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = HimalayanGrey)
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -352,10 +355,24 @@ fun HimalayanSearchUnit(modifier: Modifier = Modifier) {
         ) {
             Icon(imageVector = Icons.Default.Radio, contentDescription = null, tint = HimalayanCharcoal, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "ENTER FREQUE",
-                style = MaterialTheme.typography.labelLarge,
-                color = HimalayanCharcoal.copy(alpha = 0.5f)
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                textStyle = MaterialTheme.typography.labelLarge.copy(color = HimalayanCharcoal),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
+                modifier = Modifier.weight(1f),
+                decorationBox = { inner ->
+                    if (query.isEmpty()) {
+                        Text(
+                            text = "ENTER FREQUENCY",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = HimalayanCharcoal.copy(alpha = 0.5f)
+                        )
+                    }
+                    inner()
+                }
             )
         }
 
@@ -365,7 +382,7 @@ fun HimalayanSearchUnit(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(48.dp)
                 .background(HimalayanDesertSand, RoundedCornerShape(2.dp))
-                .clickable { },
+                .clickable { onSearch(query) },
             contentAlignment = Alignment.Center
         ) {
             Icon(imageVector = Icons.Default.KeyboardReturn, contentDescription = null, tint = HimalayanCharcoal)

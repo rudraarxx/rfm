@@ -57,17 +57,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // ── Stations ──────────────────────────────────────────────────────────────
     private val _stateStations = MutableStateFlow<List<Station>>(emptyList())
     private val _displayedStationsRaw = MutableStateFlow<List<Station>>(emptyList())
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     // ── Favorites ─────────────────────────────────────────────────────────────
     private val _favoriteIds = MutableStateFlow<Set<String>>(emptySet())
     val favoriteIds: StateFlow<Set<String>> = _favoriteIds.asStateFlow()
 
-    /** Displayed stations with favorites sorted to the top. */
+    /** Displayed stations filtered by search query, with favorites sorted to the top. */
     val displayedStations: StateFlow<List<Station>> = combine(
-        _displayedStationsRaw, _favoriteIds
-    ) { stations, favs ->
-        if (favs.isEmpty()) stations
-        else stations.sortedWith(compareByDescending { it.id in favs })
+        _displayedStationsRaw, _favoriteIds, _searchQuery
+    ) { stations, favs, query ->
+        val filtered = if (query.isBlank()) stations
+            else stations.filter { it.name.contains(query, ignoreCase = true) || it.tags.any { t -> t.contains(query, ignoreCase = true) } }
+        if (favs.isEmpty()) filtered
+        else filtered.sortedWith(compareByDescending { it.id in favs })
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _isLoadingStations = MutableStateFlow(false)
@@ -135,6 +139,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _isLoadingStations.value = false
             }
         }
+    }
+
+    fun searchStations(query: String) {
+        _searchQuery.value = query
     }
 
     fun loadStations() {

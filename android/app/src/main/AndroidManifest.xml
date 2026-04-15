@@ -16,6 +16,7 @@
 
         <activity
             android:name=".presentation.main.MainActivity"
+            android:theme="@style/Theme.RFM.Starting"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize">
