@@ -8,6 +8,7 @@ interface RadioState {
   isPlaying: boolean;
   volume: number;
   stations: Station[];
+  analyser: AnalyserNode | null;
   visualizerStyle: "classic" | "colorful";
   
   // Actions
