@@ -15,8 +15,9 @@ import com.rfm.nagpurpulse.databinding.ActivityMainBinding
 import com.rfm.nagpurpulse.presentation.components.MiniPlayer
 import com.rfm.nagpurpulse.presentation.components.NagpurPulseBottomNav
 import com.rfm.nagpurpulse.presentation.player.PlayerBottomSheet
-import com.rfm.nagpurpulse.presentation.theme.HimalayanCharcoal
+import com.rfm.nagpurpulse.presentation.theme.DeepNavy
 import com.rfm.nagpurpulse.presentation.theme.NagpurPulseTheme
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -54,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 val isBuffering by viewModel.isBuffering.collectAsState()
                 var selectedNavItem by remember { mutableIntStateOf(1) }
 
-                Column(modifier = Modifier.background(HimalayanCharcoal)) {
+                Column(modifier = Modifier.background(DeepNavy)) {
                     NagpurPulseBottomNav(
                         selectedItem = selectedNavItem,
                         onItemSelected = { index -> 
