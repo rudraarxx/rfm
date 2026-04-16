@@ -8,6 +8,8 @@ class Station {
   final String? tags;
   final String? country;
   final String? state;
+  final String? city;
+  final String? language;
   final int? votes;
 
   Station({
@@ -20,6 +22,8 @@ class Station {
     this.tags,
     this.country,
     this.state,
+    this.city,
+    this.language,
     this.votes,
   });
 
@@ -34,6 +38,8 @@ class Station {
       tags: json['tags'],
       country: json['country'],
       state: json['state'],
+      city: json['city'],
+      language: json['language'],
       votes: json['votes'] is int ? json['votes'] : int.tryParse(json['votes']?.toString() ?? '0'),
     );
   }
@@ -49,6 +55,8 @@ class Station {
       'tags': tags,
       'country': country,
       'state': state,
+      'city': city,
+      'language': language,
       'votes': votes,
     };
   }
@@ -63,6 +71,8 @@ class Station {
     String? tags,
     String? country,
     String? state,
+    String? city,
+    String? language,
     int? votes,
   }) {
     return Station(
@@ -75,6 +85,8 @@ class Station {
       tags: tags ?? this.tags,
       country: country ?? this.country,
       state: state ?? this.state,
+      city: city ?? this.city,
+      language: language ?? this.language,
       votes: votes ?? this.votes,
     );
   }

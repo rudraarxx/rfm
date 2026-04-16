@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../logic/controllers/radio_controller.dart';
@@ -33,9 +34,10 @@ class MiniPlayer extends ConsumerWidget {
           ),
         );
       },
-      child: BrassGlassContainer(
-        borderRadius: 40,
+      child: GlassContainer(
+        borderRadius: 0,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.9),
         child: Row(
           children: [
             // Artwork
@@ -45,8 +47,7 @@ class MiniPlayer extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C1810),
-                  borderRadius: BorderRadius.circular(16),
+                  color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   image: station.favicon != null
                       ? DecorationImage(
                           image: NetworkImage(station.favicon!),
@@ -55,7 +56,7 @@ class MiniPlayer extends ConsumerWidget {
                       : null,
                 ),
                 child: station.favicon == null
-                    ? const Icon(Icons.music_note, color: Color(0xFFD4AF37), size: 24)
+                    ? Icon(Icons.music_note, color: Theme.of(context).colorScheme.primary, size: 24)
                     : null,
               ),
             ),
@@ -68,35 +69,37 @@ class MiniPlayer extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    station.name,
+                    station.name.toUpperCase(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Row(
                     children: [
                       Container(
-                        width: 6,
-                        height: 6,
+                        width: 4,
+                        height: 4,
                         decoration: BoxDecoration(
                           color: radioState.isPlaying 
-                              ? const Color(0xFFFFB03B) 
+                              ? Theme.of(context).colorScheme.primaryContainer 
                               : Colors.white24,
-                          shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'LIVE PULSE',
+                        'ANALYZING FREQUENCY...',
                         style: TextStyle(
                           fontSize: 8,
+                          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 2,
-                          color: const Color(0xFFD4AF37).withOpacity(0.8),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                         ),
                       ),
                     ],
@@ -109,7 +112,7 @@ class MiniPlayer extends ConsumerWidget {
             IconButton(
               icon: Icon(
                 radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                color: const Color(0xFFD4AF37),
+                color: Theme.of(context).colorScheme.primary,
                 size: 28,
               ),
               onPressed: () => ref.read(radioControllerProvider.notifier).togglePlay(),

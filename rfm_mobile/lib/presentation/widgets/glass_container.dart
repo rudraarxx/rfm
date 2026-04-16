@@ -14,7 +14,7 @@ class GlassContainer extends StatelessWidget {
   const GlassContainer({
     super.key,
     required this.child,
-    this.borderRadius = 24,
+    this.borderRadius = 0,
     this.blur = 20,
     this.borderOpacity = 0.1,
     this.color,
@@ -43,38 +43,12 @@ class GlassContainer extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
               color: (isDark ? Colors.white : Colors.black).withOpacity(borderOpacity),
-              width: 1.5,
+              width: 1.0,
             ),
           ),
           child: child,
         ),
       ),
-    );
-  }
-}
-
-class BrassGlassContainer extends StatelessWidget {
-  final Widget child;
-  final double borderRadius;
-  final EdgeInsetsGeometry? padding;
-
-  const BrassGlassContainer({
-    super.key,
-    required this.child,
-    this.borderRadius = 30,
-    this.padding,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final brassColor = const Color(0xFFD4AF37);
-    
-    return GlassContainer(
-      borderRadius: borderRadius,
-      padding: padding,
-      color: brassColor.withOpacity(0.1),
-      borderOpacity: 0.2,
-      child: child,
     );
   }
 }

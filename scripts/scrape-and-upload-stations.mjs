@@ -108,7 +108,7 @@ function extractLinks(html, pattern) {
     /\]\((https?:\/\/[^\s)]+)\)/g,
     /\]\(\/([^\s)]+)\)/g,
   ];
-  
+
   for (const regex of regexes) {
     let m;
     while ((m = regex.exec(html)) !== null) {
@@ -124,46 +124,68 @@ function extractLinks(html, pattern) {
 // Extract station entries from a city page
 function parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName) {
   const stations = [];
-  
-  // Site HTML structure:
-  // <li> <a href="..." class="h4">Name</a>
-  // <div class="name">... | Bitrate: <span>N Kbps</span></div>
-  // <div class="name">Genre: <span>...</span></div>
-  const stationRegex = /<li>\s*<a href="([^"]+)"[^>]*class="h4"[^>]*>([\s\S]*?)<\/a>[\s\S]*?(?:Bitrate: <span>(\d+)\s*Kbps<\/span>)?[\s\S]*?(?:Genre: <span>([\s\S]*?)<\/span>)?[\s\S]*?(?:Frequency: <span>([\s\S]*?)<\/span>)?[\s\S]*?(?:Language: <span>([\s\S]*?)<\/span>)?/g;
 
-  let match;
-  while ((match = stationRegex.exec(html)) !== null) {
-    const [_, href, nameRaw, bitrateStr, genresRaw, frequency, languagesRaw] = match;
-    
+  // We use a robust two-step approach: 
+  // 1. Find all <li> blocks
+  // 2. Extract fields from each block
+  const liRegex = /<li>([\s\S]*?)<\/li>/g;
+
+  let liMatch;
+  while ((liMatch = liRegex.exec(html)) !== null) {
+    const liContent = liMatch[1];
+
+    // 1. Extract Name, Link and Image
+    const linkRegex = /<a href="([^"]+)"[^>]*class="h4"[^>]*>(?:\s*<img src="([^"]+)"[^>]*>)?([\s\S]*?)<\/a>/;
+    const linkMatch = liContent.match(linkRegex);
+    if (!linkMatch) continue;
+
+    const [_, href, imgSrc, nameRaw] = linkMatch;
+
     // Clean name (strip HTML)
     const name = nameRaw.replace(/<[^>]+>/g, "").trim();
-    const slug = href.split("/").pop();
-    
-    if (Object.values(STATES).includes(name)) continue;
+    if (!name || Object.values(STATES).includes(name)) continue;
 
-    const tags = genresRaw ? genresRaw.replace(/<[^>]+>/g, "").replace(/\.\s*$/, "").trim() : "";
-    const languages = languagesRaw ? languagesRaw.replace(/<[^>]+>/g, "").replace(/\.\s*$/, "").trim() : "";
+    const slug = href.split("/").pop();
+
+    // 2. Extract Metadata Fields
+    const extractField = (pattern) => {
+      const m = liContent.match(pattern);
+      return m ? m[1].replace(/<[^>]+>/g, "").replace(/\.\s*$/, "").trim() : "";
+    };
+
+    const bitrateMatch = liContent.match(/Bitrate: <span>(\d+)\s*Kbps<\/span>/);
+    const bitrate = bitrateMatch ? parseInt(bitrateMatch[1]) : 0;
+
+    const tags = extractField(/Genre: <span>([\s\S]*?)<\/span>/);
+    const languages = extractField(/Language: <span>([\s\S]*?)<\/span>/);
+    const frequency = extractField(/Frequency: <span>([\s\S]*?)<\/span>/);
+    const established = extractField(/From: <span>([\s\S]*?)<\/span>/);
+    const contact = extractField(/Contact number: <span>([\s\S]*?)<\/span>/);
+
+    if (Object.values(STATES).includes(name)) continue;
 
     stations.push({
       changeuuid: `orfm-${stateSlug}-${citySlug}-${slug}`,
       name,
       slug,
-      url: "", 
+      url: "",
       url_resolved: "",
       homepage: href.startsWith("http") ? href : `${BASE_URL}/${href.replace(/^\//, "")}`,
-      favicon: "",
+      favicon: imgSrc ? (imgSrc.startsWith("http") ? imgSrc : `${BASE_URL}/${imgSrc.replace(/^\//, "")}`) : "",
       tags: tags.toLowerCase(),
       country: "India",
       state: stateName,
       city: cityName,
       language: languages,
-      frequency: frequency ? frequency.trim() : "",
-      bitrate: bitrateStr ? parseInt(bitrateStr) : 0,
+      frequency: frequency,
+      established: established,
+      contact_number: contact,
+      bitrate: bitrate,
       votes: 0,
       source: "onlineradiofm",
     });
   }
-  
+
   return stations;
 }
 
@@ -173,9 +195,9 @@ let radioBrowserCache = null;
 
 async function loadRadioBrowserDB() {
   if (radioBrowserCache) return radioBrowserCache;
-  
+
   console.log("📡 Loading Radio Browser India stations...");
-  
+
   // Check local cache first
   const localCachePath = join(ROOT, "src", "data", "radio-browser-cache.json");
   if (existsSync(localCachePath)) {
@@ -184,7 +206,7 @@ async function loadRadioBrowserDB() {
     console.log(`  Loaded ${radioBrowserCache.length} stations from local cache`);
     return radioBrowserCache;
   }
-  
+
   // Fetch from API
   for (const mirror of RADIO_BROWSER_MIRRORS) {
     try {
@@ -196,9 +218,9 @@ async function loadRadioBrowserDB() {
         console.log(`  Fetched ${data.length} stations from Radio Browser`);
         return radioBrowserCache;
       }
-    } catch {}
+    } catch { }
   }
-  
+
   radioBrowserCache = [];
   return [];
 }
@@ -213,7 +235,7 @@ function normalizeForMatch(str) {
 async function fetchStreamUrlFromPage(stationPageUrl) {
   const html = await fetchText(stationPageUrl);
   if (!html) return "";
-  
+
   // Look for var FILE = "..." pattern common on the site
   const fileMatch = html.match(/var\s+FILE\s*=\s*["']([^"']+)["']/);
   if (fileMatch) {
@@ -234,13 +256,13 @@ async function findStreamUrl(stationName, cityName, stateName, stationPageUrl) {
   const db = await loadRadioBrowserDB();
   const normalName = normalizeForMatch(stationName);
   const nameNoFreq = normalName.replace(/\d+\.?\d*\s*(fm|am|mhz|khz)?/gi, "").trim();
-  
+
   // Exact name match
   for (const s of db) {
     const sName = normalizeForMatch(s.name);
     if (sName === normalName && s.url) return s.url_resolved || s.url;
   }
-  
+
   // Keyword match
   const keywords = nameNoFreq.split(" ").filter((w) => w.length > 3);
   if (keywords.length > 0) {
@@ -253,7 +275,7 @@ async function findStreamUrl(stationName, cityName, stateName, stationPageUrl) {
       })
       .filter((x) => x.hits >= Math.min(2, keywords.length))
       .sort((a, b) => b.s.votes - a.s.votes);
-    
+
     if (scored.length > 0) return scored[0].s.url_resolved || scored[0].s.url;
   }
 
@@ -262,7 +284,7 @@ async function findStreamUrl(stationName, cityName, stateName, stationPageUrl) {
     const directUrl = await fetchStreamUrlFromPage(stationPageUrl);
     if (directUrl) return directUrl;
   }
-  
+
   return "";
 }
 
@@ -272,23 +294,23 @@ async function scrapeCity(stateSlug, citySlug, stateName, cityName) {
   const url = `${BASE_URL}/${stateSlug}/${citySlug}`;
   const html = await fetchText(url);
   if (!html) return [];
-  
+
   const stations = parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName);
   return stations;
 }
 
 async function main() {
   console.log("🇮🇳 Scraping onlineradiofm.in for all Indian radio stations\n");
-  
+
   // Preload Radio Browser DB
   await loadRadioBrowserDB();
-  
+
   const allStations = [];
   const stateStats = {};
-  
+
   for (const [stateSlug, stateName] of Object.entries(STATES)) {
     console.log(`\n📍 State: ${stateName}`);
-    
+
     const stateUrl = `${BASE_URL}/${stateSlug}`;
     const stateHtml = await fetchText(stateUrl);
     if (!stateHtml) {
@@ -296,13 +318,13 @@ async function main() {
       continue;
     }
     await sleep(DELAY_MS);
-    
+
     // Extract city links for this state
     // Pattern: can be absolute, relative with /, or relative without /
     // e.g. https://onlineradiofm.in/maharashtra/nagpur or /maharashtra/nagpur or maharashtra/nagpur
     const cityLinkPattern = new RegExp(`(?:https?://onlineradiofm\\.in)?/?${stateSlug}/([a-z0-9-]+)$`);
     const cityHrefs = extractLinks(stateHtml, cityLinkPattern);
-    
+
     // Parse city slugs (unique, exclude state itself and common utility slugs)
     const utilitySlugs = ["state", "genre", "language", "countries", "add-radio"];
     const citySlugs = [...new Set(
@@ -313,11 +335,11 @@ async function main() {
         })
         .filter((slug) => slug && slug !== stateSlug && !utilitySlugs.includes(slug) && slug.length > 2)
     )];
-    
+
     console.log(`  Found ${citySlugs.length} cities`);
-    
+
     const stateStations = [];
-    
+
     if (citySlugs.length === 0) {
       console.log(`  ℹ️  No sub-cities found. Scraping state page directly...`);
       const stations = await scrapeCity(stateSlug, "", stateName, stateName);
@@ -340,11 +362,11 @@ async function main() {
         .split("-")
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
-      
+
       process.stdout.write(`  🏙  ${cityName}...`);
-      
+
       const stations = await scrapeCity(stateSlug, citySlug, stateName, cityName);
-      
+
       if (stations.length > 0) {
         let matched = 0;
         // Enrich with stream URLs
@@ -359,20 +381,20 @@ async function main() {
           // Slight delay between station deep fetches if done
           if (stations.length > 1) await sleep(100);
         }
-        
+
         stateStations.push(...stations);
         process.stdout.write(` ${stations.length} stations (${matched} w/ streams)\n`);
       } else {
         process.stdout.write(` (none)\n`);
       }
-      
+
       await sleep(DELAY_MS);
     }
-    
+
     stateStats[stateName] = stateStations.length;
     allStations.push(...stateStations);
   }
-  
+
   // Deduplicate by URL (keep first occurrence)
   const seen = new Set();
   const deduped = allStations.filter((s) => {
@@ -381,10 +403,10 @@ async function main() {
     seen.add(s.url);
     return true;
   });
-  
+
   const withStreams = deduped.filter((s) => s.url);
   const withoutStreams = deduped.filter((s) => !s.url);
-  
+
   console.log("\n📊 Summary by state:");
   for (const [state, count] of Object.entries(stateStats)) {
     if (count > 0) console.log(`   ${state}: ${count} stations`);
@@ -392,7 +414,7 @@ async function main() {
   console.log(`\n📻 Total stations scraped: ${deduped.length}`);
   console.log(`   ✅ With stream URLs: ${withStreams.length}`);
   console.log(`   ⚠️  Without stream URLs: ${withoutStreams.length}`);
-  
+
   // Save output
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   const output = {
@@ -404,13 +426,13 @@ async function main() {
   };
   writeFileSync(OUT_PATH, JSON.stringify(output, null, 2));
   console.log(`\n💾 Saved to ${OUT_PATH}`);
-  
+
   // ── MongoDB Upload ──────────────────────────────────────────────────────────
   if (process.env.MONGODB_URI) {
     console.log("\n🚀 Uploading to MongoDB...");
     try {
       const { default: mongoose } = await import("mongoose");
-      
+
       const stationSchema = new mongoose.Schema({
         changeuuid: { type: String, required: true, unique: true },
         name: { type: String },
@@ -424,13 +446,16 @@ async function main() {
         votes: { type: Number },
         city: { type: String },
         language: { type: String },
+        frequency: { type: String },
+        established: { type: String },
+        contact_number: { type: String },
         codec: { type: String },
         bitrate: { type: Number },
         source: { type: String },
       }, { timestamps: true });
-      
+
       const StationModel = mongoose.models.Station || mongoose.model("Station", stationSchema);
-      
+
       await mongoose.connect(process.env.MONGODB_URI);
       console.log("✅ Connected to MongoDB");
 

@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/rfm_theme.dart';
 import 'logic/audio/radio_handler.dart';
+import 'presentation/screens/dashboard_screen.dart';
 
 late AudioHandler radioHandler;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Initialize Audio Handler
   radioHandler = await AudioService.init(
     builder: () => RadioHandler(),
     config: const AudioServiceConfig(
@@ -19,11 +21,7 @@ void main() async {
     ),
   );
 
-  runApp(
-    const ProviderScope(
-      child: RFMApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: RFMApp()));
 }
 
 class RFMApp extends ConsumerWidget {
@@ -33,43 +31,12 @@ class RFMApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'RFM Music OS',
-      theme: RFMTheme.lightTheme,
+      // The Analog Machinist is a dark-first system
+      theme: RFMTheme.darkTheme,
       darkTheme: RFMTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       home: const DashboardScreen(),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.background,
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-            ],
-          ),
-        ),
-        child: const Center(
-          child: Text(
-            'RFM Music OS',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 4,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
