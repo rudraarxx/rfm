@@ -86,25 +86,27 @@ class PlayerScreen extends ConsumerWidget {
                   // Large Artwork
                   Hero(
                     tag: 'player-art',
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.8,
+                    child: AspectRatio(
                       aspectRatio: 1,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2C1810),
-                        borderRadius: BorderRadius.circular(40),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFD4AF37).withOpacity(0.15),
-                            blurRadius: 60,
-                            offset: const Offset(0, 30),
-                          ),
-                        ],
-                        image: station.favicon != null
-                            ? DecorationImage(
-                                image: NetworkImage(station.favicon!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2C1810),
+                          borderRadius: BorderRadius.circular(40),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD4AF37).withOpacity(0.15),
+                              blurRadius: 60,
+                              offset: const Offset(0, 30),
+                            ),
+                          ],
+                          image: station.favicon != null
+                              ? DecorationImage(
+                                  image: NetworkImage(station.favicon!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
                   ),

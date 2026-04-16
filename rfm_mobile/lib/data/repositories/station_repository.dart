@@ -1,12 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/stations.dart';
 import '../models/station.dart';
+import '../services/station_api.dart';
 
 class StationRepository {
+  final StationApi _api;
+
+  StationRepository({StationApi? api}) : _api = api ?? StationApi();
+
   Future<List<Station>> getStations() async {
-    // For now, we return fallback stations. 
-    // Later we can add Radio Browser API integration.
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final stations = await _api.getStations();
+      if (stations.isNotEmpty) return stations;
+    } catch (_) {
+      // API unavailable — fall back to bundled stations
+    }
     return fallbackStations;
   }
 }

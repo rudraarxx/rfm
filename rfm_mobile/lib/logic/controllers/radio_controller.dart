@@ -1,4 +1,3 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/station.dart';
 import '../../data/repositories/persistence_service.dart';
@@ -79,7 +78,6 @@ class RadioController extends StateNotifier<RadioState> {
     if (state.isPlaying) {
       await radioHandler.pause();
     } else {
-      rootBundle.load('assets/haptics/click.mp3').catchError((_){}); // Placeholder for pulse
       await radioHandler.play();
     }
   }
