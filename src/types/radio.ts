@@ -9,4 +9,10 @@ export interface Station {
   country: string;
   state: string;
   votes: number;
+  // Optional fields
+  city?: string;
+  language?: string;
+  codec?: string;
+  bitrate?: number;
+  source?: string;
 }
