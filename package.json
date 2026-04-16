@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "update-stations": "node scripts/fetch-indian-stations.mjs"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
@@ -15,8 +16,10 @@
     "@radix-ui/react-slot": "^1.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
+    "mongoose": "^9.4.1",
     "next": "16.2.3",
     "next-themes": "^0.4.6",
     "react": "19.2.4",

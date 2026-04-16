@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Station } from "@/types/radio";
-import { FALLBACK_STATIONS } from "@/lib/constants";
+import { getAllStations } from "@/data/stationDb";
 
 interface RadioState {
   currentStation: Station | null;
   isPlaying: boolean;
   volume: number;
   stations: Station[];
+  analyser: AnalyserNode | null;
   visualizerStyle: "classic" | "colorful";
   
   // Actions
@@ -20,15 +21,17 @@ interface RadioState {
   setVisualizerStyle: (style: "classic" | "colorful") => void;
   nextStation: () => void;
   previousStation: () => void;
+  initialize: () => Promise<void>;
 }
 
+const API_URL = "/api/stations";
 export const useRadioStore = create<RadioState>()(
   persist(
     (set) => ({
       currentStation: null,
       isPlaying: false,
       volume: 80,
-      stations: FALLBACK_STATIONS,
+      stations: getAllStations(),
       analyser: null,
       visualizerStyle: "classic",
 
@@ -67,6 +70,23 @@ export const useRadioStore = create<RadioState>()(
         const prevIndex = (currentIndex - 1 + state.stations.length) % state.stations.length;
         return { currentStation: state.stations[prevIndex], isPlaying: true };
       }),
+
+      initialize: async () => {
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok) throw new Error("Failed to fetch remote cache");
+          
+          const data = await response.json();
+          if (data && data.stations) {
+            const { mergeRemoteStations } = await import("@/data/stationDb");
+            const updatedStations = mergeRemoteStations(data.stations);
+            set({ stations: updatedStations });
+            console.log(`✅ Loaded ${data.stations.length} remote stations`);
+          }
+        } catch (error) {
+          console.error("❌ Error loading remote stations:", error);
+        }
+      },
     }),
     {
       name: "radio-storage",
