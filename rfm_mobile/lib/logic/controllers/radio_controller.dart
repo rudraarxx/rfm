@@ -80,7 +80,6 @@ class RadioController extends StateNotifier<RadioState> {
     if (state.isPlaying) {
       await radioHandler.pause();
     } else {
-      rootBundle.load('assets/haptics/click.mp3').catchError((_){}); // Placeholder for pulse
       await radioHandler.play();
     }
   }

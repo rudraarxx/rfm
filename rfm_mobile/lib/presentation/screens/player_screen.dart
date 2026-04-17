@@ -19,11 +19,12 @@ class PlayerScreen extends ConsumerWidget {
     if (station == null) return const Scaffold();
 
     return Scaffold(
+      backgroundColor: RFMTheme.surface,
       body: Stack(
         children: [
           // Background - Solid Industrial Surface
           Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
+            color: RFMTheme.surface,
           ),
 
           SafeArea(
@@ -44,7 +45,7 @@ class PlayerScreen extends ConsumerWidget {
                       Text(
                         'ANALOG RECEIVER // V.1.0',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: RFMTheme.primaryContainer,
                         ),
                       ),
                       IconButton(
@@ -67,9 +68,9 @@ class PlayerScreen extends ConsumerWidget {
                         child: Container(
                           width: MediaQuery.of(context).size.width * 0.85,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            color: RFMTheme.surfaceContainerHigh,
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                              color: RFMTheme.outline.withOpacity(0.2),
                               width: 1,
                             ),
                             image: station.favicon != null
@@ -96,9 +97,9 @@ class PlayerScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'LOCATION: ${station.tags?.split(',').first ?? 'MAHARASHTRA'} // STATUS: CONNECTED',
+                    'LOCATION: ${station.tags?.split(',').first ?? 'INDIA'} // STATUS: CONNECTED',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      color: RFMTheme.onSurface.withOpacity(0.5),
                       letterSpacing: 1.0,
                     ),
                   ),
@@ -123,15 +124,9 @@ class PlayerScreen extends ConsumerWidget {
                         child: Container(
                           width: 80,
                           height: 80,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: RFMTheme.primaryGradient,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-                                blurRadius: 30,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+                            shape: BoxShape.rectangle,
                           ),
                           child: Icon(
                             radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
@@ -148,12 +143,12 @@ class PlayerScreen extends ConsumerWidget {
                   // Volume - Machined Slider
                   Row(
                     children: [
-                      Icon(LucideIcons.volume1, size: 16, color: Theme.of(context).colorScheme.primary),
+                      const Icon(LucideIcons.volume1, size: 16, color: RFMTheme.primaryContainer),
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: Theme.of(context).colorScheme.primaryContainer,
-                            inactiveTrackColor: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            activeTrackColor: RFMTheme.primaryContainer,
+                            inactiveTrackColor: RFMTheme.outline.withOpacity(0.2),
                             thumbColor: Colors.white,
                             trackHeight: 1,
                             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
@@ -164,7 +159,7 @@ class PlayerScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      Icon(LucideIcons.volume2, size: 16, color: Theme.of(context).colorScheme.primary),
+                      const Icon(LucideIcons.volume2, size: 16, color: RFMTheme.primaryContainer),
                     ],
                   ),
 

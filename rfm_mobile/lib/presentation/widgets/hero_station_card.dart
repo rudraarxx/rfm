@@ -1,111 +1,153 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../data/models/station.dart';
 import '../../core/theme/rfm_theme.dart';
 
 class HeroStationCard extends StatelessWidget {
   final Station station;
-  final VoidCallback onPlay;
+  final bool isPlaying;
+  final VoidCallback onPlayTap;
 
   const HeroStationCard({
     super.key,
     required this.station,
-    required this.onPlay,
+    required this.isPlaying,
+    required this.onPlayTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 380,
       width: double.infinity,
-      height: 320,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLowest,
-        image: station.favicon != null
-            ? DecorationImage(
-                image: NetworkImage(station.favicon!),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.6),
-                  BlendMode.darken,
-                ),
-              )
-            : null,
-      ),
+      color: RFMTheme.surface,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // Technical Background Overlay
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.1,
-              child: CustomPaint(
-                painter: GridPainter(),
+          // Background Image (Right-aligned for asymmetry)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 40,
+            width: MediaQuery.of(context).size.width * 0.85,
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/vintage_radio_hero.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              foregroundDecoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    RFMTheme.surface,
+                    RFMTheme.surface.withOpacity(0.0),
+                  ],
+                  stops: const [0.0, 0.4],
+                ),
               ),
             ),
           ),
-          
+
+          // Content
           Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  station.name.toUpperCase(),
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    fontSize: 42,
-                    height: 1.0,
-                    letterSpacing: -1,
+                const Spacer(),
+                // Large Asymmetrical Typography
+                Transform.translate(
+                  offset: const Offset(-4, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'THE IRON',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                              fontSize: 64,
+                              height: 0.85,
+                              letterSpacing: -0.04 * 64,
+                            ),
+                      ),
+                      Text(
+                        'RHYTHM',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                              fontSize: 64,
+                              height: 0.85,
+                              letterSpacing: -0.04 * 64,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Listen Now Button
+                    // Primary Gradient Button (Sharp Corners)
                     GestureDetector(
-                      onTap: onPlay,
+                      onTap: onPlayTap,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        decoration: BoxDecoration(
-                          gradient: RFMTheme.primaryGradient,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Color(0xFFFF3B3B),
+                              Color(0xFFF45B69),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.zero,
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                            const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'LISTEN NOW',
-                              style: GoogleFonts.spaceGrotesk(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1,
+                                  ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 32),
-                    // Frequency Info
+                    const Spacer(),
+                    // Frequency Info (Technical Detail)
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
                           'FREQUENCY',
                           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                            fontSize: 9,
-                          ),
+                                color: RFMTheme.onSurface.withOpacity(0.35),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
-                          station.tags?.contains('fm') == true 
-                            ? '104.2 MHZ' // Placeholder or pattern match from tags
-                            : 'DIGITAL STREAM',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          '104.2 MHZ',
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                fontSize: 32,
+                                color: RFMTheme.onSurface,
+                              ),
                         ),
                       ],
                     ),
@@ -118,23 +160,4 @@ class HeroStationCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class GridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 0.5;
-
-    for (double i = 0; i < size.width; i += 20) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
-    }
-    for (double i = 0; i < size.height; i += 20) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

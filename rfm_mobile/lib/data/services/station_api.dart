@@ -1,14 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/config/env.dart';
 import '../models/station.dart';
 
 class StationApi {
-  // When running on iOS simulator, localhost maps to the host machine.
-  // For Android emulator, use 10.0.2.2 instead.
-  // For a real device on the same network, use your machine's LAN IP.
-  // In production, replace with your deployed Next.js URL.
-  static const String _baseUrl = 'https://rfm-five.vercel.app/api';
-
   final http.Client _client;
 
   StationApi({http.Client? client}) : _client = client ?? http.Client();
@@ -25,7 +20,9 @@ class StationApi {
     if (city != null && city.isNotEmpty) queryParams['city'] = city;
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
-    final uri = Uri.parse('$_baseUrl/stations').replace(queryParameters: queryParams);
+    final uri = Uri.parse('${Env.baseUrl}/stations')
+        .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+        
     final response = await _client.get(uri);
 
     if (response.statusCode != 200) {
@@ -42,7 +39,7 @@ class StationApi {
   /// Fetch the state/city index for discovery dropdowns.
   /// Returns a map where keys are "State|City" strings.
   Future<Map<String, List<String>>> getIndex() async {
-    final uri = Uri.parse('$_baseUrl/index');
+    final uri = Uri.parse('${Env.baseUrl}/index');
     final response = await _client.get(uri);
 
     if (response.statusCode != 200) {
