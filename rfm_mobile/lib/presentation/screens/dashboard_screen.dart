@@ -155,18 +155,11 @@ class DashboardScreen extends ConsumerWidget {
                           final isAsymmetrical = (index + 1) % 3 == 0;
                           
                           return Padding(
-                            padding: EdgeInsets.only(
-                              left: isAsymmetrical ? 48 : 0,
-                              right: isAsymmetrical ? 0 : 0,
-                              bottom: 4,
-                            ),
-                            child: Transform.translate(
-                              offset: Offset(isAsymmetrical ? -12 : 0, 0),
-                              child: StationListTile(
-                                station: station,
-                                isActive: radioState.currentStation?.changeuuid == station.changeuuid,
-                                onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
-                              ),
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: StationListTile(
+                              station: station,
+                              isActive: radioState.currentStation?.changeuuid == station.changeuuid,
+                              onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
                             ),
                           );
                         },

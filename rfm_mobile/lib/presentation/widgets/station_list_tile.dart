@@ -19,7 +19,7 @@ class StationListTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isActive ? RFMTheme.surfaceContainerHigh : RFMTheme.surfaceContainerLow,
