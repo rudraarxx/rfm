@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/rfm_theme.dart';
 import 'logic/audio/radio_handler.dart';
-import 'presentation/screens/dashboard_screen.dart';
+import 'presentation/screens/main_screen.dart';
 
 late AudioHandler radioHandler;
 
@@ -35,7 +35,7 @@ class RFMApp extends ConsumerWidget {
       theme: RFMTheme.darkTheme,
       darkTheme: RFMTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      home: const DashboardScreen(),
+      home: const MainScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

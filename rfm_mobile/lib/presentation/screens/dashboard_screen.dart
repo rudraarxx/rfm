@@ -9,6 +9,7 @@ import '../widgets/section_header.dart';
 import '../widgets/city_station_card.dart';
 import '../widgets/station_list_tile.dart';
 import '../widgets/mini_player.dart';
+import '../../logic/providers/location_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -17,6 +18,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stationsAsync = ref.watch(stationsProvider);
     final radioState = ref.watch(radioControllerProvider);
+    final locationState = ref.watch(locationProvider);
 
     return Scaffold(
       backgroundColor: RFMTheme.surface,
@@ -52,17 +54,20 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            color: RFMTheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.zero,
-                          ),
-                          child: Icon(
-                            Icons.person_outline_rounded,
-                            color: RFMTheme.onSurface.withOpacity(0.4),
-                            size: 24,
+                        GestureDetector(
+                          onTap: () => _showLocationDialog(context, ref),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: const BoxDecoration(
+                              color: RFMTheme.surfaceContainerHigh,
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            child: Icon(
+                              Icons.location_on_outlined,
+                              color: locationState.isLoading ? RFMTheme.primaryContainer : RFMTheme.onSurface.withOpacity(0.4),
+                              size: 24,
+                            ),
                           ),
                         ),
                       ],
@@ -89,22 +94,16 @@ class DashboardScreen extends ConsumerWidget {
 
                 // 2. In Your City Section (Horizontal Rail)
                 SliverToBoxAdapter(
-                  child: stationsAsync.when(
-                    data: (stations) {
-                      final cityStations = stations.where((s) => 
-                        (s.state?.toLowerCase().contains('nagpur') ?? false) || 
-                        (s.tags?.toLowerCase().contains('nagpur') ?? false) ||
-                        (s.state?.toLowerCase().contains('maharashtra') ?? false)
-                      ).toList();
-
+                  child: ref.watch(cityStationsProvider).when(
+                    data: (cityStations) {
                       if (cityStations.isEmpty) return const SizedBox.shrink();
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SectionHeader(
+                          SectionHeader(
                             title: 'Local\nTransmission',
-                            subtitle: 'In Your City',
+                            subtitle: 'In ${locationState.city}',
                             actionText: 'Scan All',
                           ),
                           SizedBox(
@@ -183,97 +182,68 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
 
-          // Mini Player (Tonal Depth Layer)
-          if (radioState.currentStation != null)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 90,
-              child: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    color: RFMTheme.surfaceContainerHigh.withOpacity(0.8),
-                    child: const MiniPlayer(),
-                  ),
-                ),
-              ),
-            ),
-
-          // Glassmorphism Navigation Bar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: Container(
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: RFMTheme.surfaceContainerLowest.withOpacity(0.7),
-                    border: Border(
-                      top: BorderSide(
-                        color: RFMTheme.outline.withOpacity(0.1),
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(context, Icons.stop_circle_rounded, 'HOME', true),
-                      _buildNavItem(context, Icons.radio_rounded, 'PLAYER', false),
-                      _buildNavItem(context, Icons.search_rounded, 'SEARCH', false),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, bool isActive) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          color: Colors.transparent,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isActive ? RFMTheme.primaryContainer.withOpacity(0.15) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      icon,
-                      color: isActive ? RFMTheme.primaryContainer : RFMTheme.onSurface.withOpacity(0.4),
-                      size: 24,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isActive ? RFMTheme.primaryContainer : RFMTheme.onSurface.withOpacity(0.3),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  void _showLocationDialog(BuildContext context, WidgetRef ref) {
+    final cityController = TextEditingController(text: ref.read(locationProvider).city);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: RFMTheme.surfaceContainerHigh,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        title: Text(
+          'SELECT LOCATION',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: RFMTheme.primaryContainer,
+            fontWeight: FontWeight.w900,
           ),
         ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: cityController,
+              autofocus: true,
+              style: Theme.of(context).textTheme.bodyLarge,
+              decoration: const InputDecoration(
+                hintText: 'Enter City Name',
+                hintStyle: TextStyle(color: Colors.white24),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ref.read(locationProvider.notifier).detectLocation();
+                },
+                icon: const Icon(Icons.my_location, size: 18),
+                label: const Text('AUTO-DETECT'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'CANCEL',
+              style: TextStyle(color: RFMTheme.onSurface.withOpacity(0.4)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(locationProvider.notifier).updateCity(cityController.text);
+              Navigator.pop(context);
+            },
+            child: const Text('CONFIRM', style: TextStyle(color: RFMTheme.primaryContainer)),
+          ),
+        ],
       ),
     );
   }

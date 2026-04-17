@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/stations.dart';
+import '../../logic/providers/location_provider.dart';
 import '../models/station.dart';
 import '../services/station_api.dart';
 
@@ -43,7 +44,9 @@ class StationRepository {
       return fallbackStations
           .where((s) =>
               s.name.toLowerCase().contains(q) ||
-              (s.tags?.toLowerCase().contains(q) ?? false))
+              (s.tags?.toLowerCase().contains(q) ?? false) ||
+              (s.city?.toLowerCase().contains(q) ?? false) ||
+              (s.state?.toLowerCase().contains(q) ?? false))
           .toList();
     }
   }
@@ -89,3 +92,12 @@ final searchStationsProvider = FutureProvider.family<List<Station>, String>(
     return repository.searchStations(query);
   },
 );
+
+/// Provider for stations in the current selected city.
+/// Watches only [city] — ignores isLoading/error to prevent infinite re-fires.
+final cityStationsProvider = FutureProvider<List<Station>>((ref) async {
+  // select() ensures we only rebuild when city string actually changes
+  final city = ref.watch(locationProvider.select((s) => s.city));
+  final repository = ref.read(stationRepositoryProvider);
+  return repository.searchStations(city);
+});
