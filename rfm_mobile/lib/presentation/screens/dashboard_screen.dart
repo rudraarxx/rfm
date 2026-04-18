@@ -11,11 +11,43 @@ import '../widgets/station_list_tile.dart';
 import '../widgets/mini_player.dart';
 import '../../logic/providers/location_provider.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  late ScrollController _cityScrollController;
+  double _scrollProgress = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cityScrollController = ScrollController();
+    _cityScrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_cityScrollController.hasClients) {
+      final max = _cityScrollController.position.maxScrollExtent;
+      if (max > 0) {
+        setState(() {
+          _scrollProgress = _cityScrollController.offset / max;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _cityScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final stationsAsync = ref.watch(stationsProvider);
     final radioState = ref.watch(radioControllerProvider);
     final locationState = ref.watch(locationProvider);
@@ -107,8 +139,9 @@ class DashboardScreen extends ConsumerWidget {
                             actionText: 'Scan All',
                           ),
                           SizedBox(
-                            height: 340,
+                            height: 360,
                             child: ListView.builder(
+                              controller: _cityScrollController,
                               scrollDirection: Axis.horizontal,
                               physics: const BouncingScrollPhysics(),
                               itemCount: cityStations.length,
@@ -121,6 +154,26 @@ class DashboardScreen extends ConsumerWidget {
                                   onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
                                 );
                               },
+                            ),
+                          ),
+                          // Machinist Scroll Indicator
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 2,
+                                  width: double.infinity,
+                                  color: Colors.white.withOpacity(0.05),
+                                ),
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 100),
+                                  height: 2,
+                                  width: MediaQuery.of(context).size.width * 0.3 + 
+                                         (MediaQuery.of(context).size.width * 0.7 * _scrollProgress),
+                                  color: RFMTheme.primaryContainer,
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -149,10 +202,6 @@ class DashboardScreen extends ConsumerWidget {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final station = stations[index];
-                          // 2+1 Layout Principle:
-                          // Every 3rd item gets asymmetrical treatment (shift and width)
-                          final isAsymmetrical = (index + 1) % 3 == 0;
-                          
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 4),
                             child: StationListTile(
@@ -181,7 +230,6 @@ class DashboardScreen extends ConsumerWidget {
               ],
             ),
           ),
-
         ],
       ),
     );

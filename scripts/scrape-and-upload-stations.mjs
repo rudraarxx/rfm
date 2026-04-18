@@ -31,39 +31,39 @@ const OUT_PATH = join(ROOT, "src", "data", "onlineradiofm-cache.json");
 // All Indian states (slug → display name)
 const STATES = {
   "andhra-pradesh": "Andhra Pradesh",
-  "assam": "Assam",
-  "bihar": "Bihar",
-  "chandigarh": "Chandigarh",
-  "chhattisgarh": "Chhattisgarh",
-  "delhi": "Delhi",
-  "gujarat": "Gujarat",
-  "haryana": "Haryana",
+  assam: "Assam",
+  bihar: "Bihar",
+  chandigarh: "Chandigarh",
+  chhattisgarh: "Chhattisgarh",
+  delhi: "Delhi",
+  gujarat: "Gujarat",
+  haryana: "Haryana",
   "himachal-pradesh": "Himachal Pradesh",
   "jammu-and-kashmir": "Jammu and Kashmir",
-  "jharkhand": "Jharkhand",
-  "karnataka": "Karnataka",
-  "kerala": "Kerala",
+  jharkhand: "Jharkhand",
+  karnataka: "Karnataka",
+  kerala: "Kerala",
   "madhya-pradesh": "Madhya Pradesh",
-  "maharashtra": "Maharashtra",
-  "manipur": "Manipur",
-  "mizoram": "Mizoram",
-  "sikkim": "Sikkim",
-  "puducherry": "Puducherry",
-  "punjab": "Punjab",
-  "rajasthan": "Rajasthan",
+  maharashtra: "Maharashtra",
+  manipur: "Manipur",
+  mizoram: "Mizoram",
+  sikkim: "Sikkim",
+  puducherry: "Puducherry",
+  punjab: "Punjab",
+  rajasthan: "Rajasthan",
   "tamil-nadu": "Tamil Nadu",
-  "telangana": "Telangana",
-  "tripura": "Tripura",
+  telangana: "Telangana",
+  tripura: "Tripura",
   "uttar-pradesh": "Uttar Pradesh",
-  "uttarakhand": "Uttarakhand",
+  uttarakhand: "Uttarakhand",
   "west-bengal": "West Bengal",
   "odisha-orissa": "Odisha",
-  "goa": "Goa",
-  "meghalaya": "Meghalaya",
-  "nagaland": "Nagaland",
+  goa: "Goa",
+  meghalaya: "Meghalaya",
+  nagaland: "Nagaland",
   "arunachal-pradesh": "Arunachal Pradesh",
   "andaman-and-nicobar-islands": "Andaman & Nicobar Islands",
-  "lakshadweep": "Lakshadweep",
+  lakshadweep: "Lakshadweep",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -112,7 +112,11 @@ function extractLinks(html, pattern) {
   for (const regex of regexes) {
     let m;
     while ((m = regex.exec(html)) !== null) {
-      const href = m[1].startsWith("http") ? m[1] : (m[1].startsWith("/") ? m[1] : `/${m[1]}`);
+      const href = m[1].startsWith("http")
+        ? m[1]
+        : m[1].startsWith("/")
+          ? m[1]
+          : `/${m[1]}`;
       if (pattern.test(href)) {
         matches.push(href);
       }
@@ -125,7 +129,7 @@ function extractLinks(html, pattern) {
 function parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName) {
   const stations = [];
 
-  // We use a robust two-step approach: 
+  // We use a robust two-step approach:
   // 1. Find all <li> blocks
   // 2. Extract fields from each block
   const liRegex = /<li>([\s\S]*?)<\/li>/g;
@@ -135,7 +139,8 @@ function parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName) {
     const liContent = liMatch[1];
 
     // 1. Extract Name, Link and Image
-    const linkRegex = /<a href="([^"]+)"[^>]*class="h4"[^>]*>(?:\s*<img src="([^"]+)"[^>]*>)?([\s\S]*?)<\/a>/;
+    const linkRegex =
+      /<a href="([^"]+)"[^>]*class="h4"[^>]*>(?:\s*<img src="([^"]+)"[^>]*>)?([\s\S]*?)<\/a>/;
     const linkMatch = liContent.match(linkRegex);
     if (!linkMatch) continue;
 
@@ -150,7 +155,12 @@ function parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName) {
     // 2. Extract Metadata Fields
     const extractField = (pattern) => {
       const m = liContent.match(pattern);
-      return m ? m[1].replace(/<[^>]+>/g, "").replace(/\.\s*$/, "").trim() : "";
+      return m
+        ? m[1]
+            .replace(/<[^>]+>/g, "")
+            .replace(/\.\s*$/, "")
+            .trim()
+        : "";
     };
 
     const bitrateMatch = liContent.match(/Bitrate: <span>(\d+)\s*Kbps<\/span>/);
@@ -170,8 +180,14 @@ function parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName) {
       slug,
       url: "",
       url_resolved: "",
-      homepage: href.startsWith("http") ? href : `${BASE_URL}/${href.replace(/^\//, "")}`,
-      favicon: imgSrc ? (imgSrc.startsWith("http") ? imgSrc : `${BASE_URL}/${imgSrc.replace(/^\//, "")}`) : "",
+      homepage: href.startsWith("http")
+        ? href
+        : `${BASE_URL}/${href.replace(/^\//, "")}`,
+      favicon: imgSrc
+        ? imgSrc.startsWith("http")
+          ? imgSrc
+          : `${BASE_URL}/${imgSrc.replace(/^\//, "")}`
+        : "",
       tags: tags.toLowerCase(),
       country: "India",
       state: stateName,
@@ -203,7 +219,9 @@ async function loadRadioBrowserDB() {
   if (existsSync(localCachePath)) {
     const cached = JSON.parse(readFileSync(localCachePath, "utf-8"));
     radioBrowserCache = cached.stations || [];
-    console.log(`  Loaded ${radioBrowserCache.length} stations from local cache`);
+    console.log(
+      `  Loaded ${radioBrowserCache.length} stations from local cache`,
+    );
     return radioBrowserCache;
   }
 
@@ -211,14 +229,14 @@ async function loadRadioBrowserDB() {
   for (const mirror of RADIO_BROWSER_MIRRORS) {
     try {
       const data = await fetchJson(
-        `${mirror}/stations/search?countrycode=IN&limit=2000&lastcheckok=1&order=votes&reverse=true`
+        `${mirror}/stations/search?countrycode=IN&limit=2000&lastcheckok=1&order=votes&reverse=true`,
       );
       if (data) {
         radioBrowserCache = data;
         console.log(`  Fetched ${data.length} stations from Radio Browser`);
         return radioBrowserCache;
       }
-    } catch { }
+    } catch {}
   }
 
   radioBrowserCache = [];
@@ -226,7 +244,8 @@ async function loadRadioBrowserDB() {
 }
 
 function normalizeForMatch(str) {
-  return str.toLowerCase()
+  return str
+    .toLowerCase()
     .replace(/\s+/g, " ")
     .replace(/[^\w\s]/g, "")
     .trim();
@@ -243,7 +262,9 @@ async function fetchStreamUrlFromPage(stationPageUrl) {
   }
 
   // Fallback to searching for audio sources
-  const audioMatch = html.match(/<source[^>]+src=["']([^"']+\.mp3|[^"']+\.m3u8|[^"']+\.aac)[^"']*["']/i);
+  const audioMatch = html.match(
+    /<source[^>]+src=["']([^"']+\.mp3|[^"']+\.m3u8|[^"']+\.aac)[^"']*["']/i,
+  );
   if (audioMatch) {
     return audioMatch[1];
   }
@@ -255,7 +276,9 @@ async function findStreamUrl(stationName, cityName, stateName, stationPageUrl) {
   // Strategy 1: Radio Browser lookup
   const db = await loadRadioBrowserDB();
   const normalName = normalizeForMatch(stationName);
-  const nameNoFreq = normalName.replace(/\d+\.?\d*\s*(fm|am|mhz|khz)?/gi, "").trim();
+  const nameNoFreq = normalName
+    .replace(/\d+\.?\d*\s*(fm|am|mhz|khz)?/gi, "")
+    .trim();
 
   // Exact name match
   for (const s of db) {
@@ -295,7 +318,13 @@ async function scrapeCity(stateSlug, citySlug, stateName, cityName) {
   const html = await fetchText(url);
   if (!html) return [];
 
-  const stations = parseStationsFromPage(html, stateSlug, citySlug, stateName, cityName);
+  const stations = parseStationsFromPage(
+    html,
+    stateSlug,
+    citySlug,
+    stateName,
+    cityName,
+  );
   return stations;
 }
 
@@ -305,8 +334,47 @@ async function main() {
   // Preload Radio Browser DB
   await loadRadioBrowserDB();
 
+  // ── MongoDB setup (connect once, reuse for per-city uploads) ───────────────
+  let StationModel = null;
+  let mongoose = null;
+  if (process.env.MONGODB_URI) {
+    ({ default: mongoose } = await import("mongoose"));
+
+    const stationSchema = new mongoose.Schema(
+      {
+        changeuuid: { type: String, required: true, unique: true },
+        name: { type: String },
+        url: { type: String },
+        url_resolved: { type: String },
+        homepage: { type: String },
+        favicon: { type: String },
+        tags: { type: String },
+        country: { type: String },
+        state: { type: String },
+        votes: { type: Number },
+        city: { type: String },
+        language: { type: String },
+        frequency: { type: String },
+        established: { type: String },
+        contact_number: { type: String },
+        codec: { type: String },
+        bitrate: { type: Number },
+        source: { type: String },
+      },
+      { timestamps: true },
+    );
+
+    StationModel =
+      mongoose.models.Station || mongoose.model("Station", stationSchema);
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("✅ Connected to MongoDB\n");
+  } else {
+    console.log("ℹ️  MONGODB_URI not found — will only save locally\n");
+  }
+
   const allStations = [];
   const stateStats = {};
+  let totalUploaded = 0;
 
   for (const [stateSlug, stateName] of Object.entries(STATES)) {
     console.log(`\n📍 State: ${stateName}`);
@@ -322,19 +390,35 @@ async function main() {
     // Extract city links for this state
     // Pattern: can be absolute, relative with /, or relative without /
     // e.g. https://onlineradiofm.in/maharashtra/nagpur or /maharashtra/nagpur or maharashtra/nagpur
-    const cityLinkPattern = new RegExp(`(?:https?://onlineradiofm\\.in)?/?${stateSlug}/([a-z0-9-]+)$`);
+    const cityLinkPattern = new RegExp(
+      `(?:https?://onlineradiofm\\.in)?/?${stateSlug}/([a-z0-9-]+)$`,
+    );
     const cityHrefs = extractLinks(stateHtml, cityLinkPattern);
 
     // Parse city slugs (unique, exclude state itself and common utility slugs)
-    const utilitySlugs = ["state", "genre", "language", "countries", "add-radio"];
-    const citySlugs = [...new Set(
-      cityHrefs
-        .map((href) => {
-          const m = href.match(cityLinkPattern);
-          return m ? m[1] : null;
-        })
-        .filter((slug) => slug && slug !== stateSlug && !utilitySlugs.includes(slug) && slug.length > 2)
-    )];
+    const utilitySlugs = [
+      "state",
+      "genre",
+      "language",
+      "countries",
+      "add-radio",
+    ];
+    const citySlugs = [
+      ...new Set(
+        cityHrefs
+          .map((href) => {
+            const m = href.match(cityLinkPattern);
+            return m ? m[1] : null;
+          })
+          .filter(
+            (slug) =>
+              slug &&
+              slug !== stateSlug &&
+              !utilitySlugs.includes(slug) &&
+              slug.length > 2,
+          ),
+      ),
+    ];
 
     console.log(`  Found ${citySlugs.length} cities`);
 
@@ -347,13 +431,36 @@ async function main() {
         let matched = 0;
         for (const station of stations) {
           if (!station.url) {
-            station.url = await findStreamUrl(station.name, stateName, stateName, station.homepage);
+            station.url = await findStreamUrl(
+              station.name,
+              stateName,
+              stateName,
+              station.homepage,
+            );
             station.url_resolved = station.url;
             if (station.url) matched++;
           } else matched++;
         }
         stateStations.push(...stations);
-        console.log(`  🏙  ${stateName} (Direct)... ${stations.length} stations (${matched} w/ streams)`);
+        console.log(
+          `  🏙  ${stateName} (Direct)... ${stations.length} stations (${matched} w/ streams)`,
+        );
+
+        if (StationModel) {
+          const ops = stations.map((s) => ({
+            updateOne: {
+              filter: { changeuuid: s.changeuuid },
+              update: { $set: s },
+              upsert: true,
+            },
+          }));
+          await StationModel.bulkWrite(ops, { ordered: false });
+          totalUploaded += stations.length;
+          console.log(
+            `  ☁️  Uploaded ${stations.length} stations to DB (total: ${totalUploaded})`,
+          );
+          console.log("stations", JSON.stringify(stations, null, 2));
+        }
       }
     }
 
@@ -365,14 +472,24 @@ async function main() {
 
       process.stdout.write(`  🏙  ${cityName}...`);
 
-      const stations = await scrapeCity(stateSlug, citySlug, stateName, cityName);
+      const stations = await scrapeCity(
+        stateSlug,
+        citySlug,
+        stateName,
+        cityName,
+      );
 
       if (stations.length > 0) {
         let matched = 0;
         // Enrich with stream URLs
         for (const station of stations) {
           if (!station.url) {
-            station.url = await findStreamUrl(station.name, cityName, stateName, station.homepage);
+            station.url = await findStreamUrl(
+              station.name,
+              cityName,
+              stateName,
+              station.homepage,
+            );
             station.url_resolved = station.url;
             if (station.url) matched++;
           } else {
@@ -383,7 +500,24 @@ async function main() {
         }
 
         stateStations.push(...stations);
-        process.stdout.write(` ${stations.length} stations (${matched} w/ streams)\n`);
+        process.stdout.write(
+          ` ${stations.length} stations (${matched} w/ streams)\n`,
+        );
+
+        if (StationModel) {
+          const ops = stations.map((s) => ({
+            updateOne: {
+              filter: { changeuuid: s.changeuuid },
+              update: { $set: s },
+              upsert: true,
+            },
+          }));
+          await StationModel.bulkWrite(ops, { ordered: false });
+          totalUploaded += stations.length;
+          console.log(
+            `  ☁️  Uploaded ${stations.length} stations to DB (total: ${totalUploaded})`,
+          );
+        }
       } else {
         process.stdout.write(` (none)\n`);
       }
@@ -427,68 +561,12 @@ async function main() {
   writeFileSync(OUT_PATH, JSON.stringify(output, null, 2));
   console.log(`\n💾 Saved to ${OUT_PATH}`);
 
-  // ── MongoDB Upload ──────────────────────────────────────────────────────────
-  if (process.env.MONGODB_URI) {
-    console.log("\n🚀 Uploading to MongoDB...");
-    try {
-      const { default: mongoose } = await import("mongoose");
-
-      const stationSchema = new mongoose.Schema({
-        changeuuid: { type: String, required: true, unique: true },
-        name: { type: String },
-        url: { type: String },
-        url_resolved: { type: String },
-        homepage: { type: String },
-        favicon: { type: String },
-        tags: { type: String },
-        country: { type: String },
-        state: { type: String },
-        votes: { type: Number },
-        city: { type: String },
-        language: { type: String },
-        frequency: { type: String },
-        established: { type: String },
-        contact_number: { type: String },
-        codec: { type: String },
-        bitrate: { type: Number },
-        source: { type: String },
-      }, { timestamps: true });
-
-      const StationModel = mongoose.models.Station || mongoose.model("Station", stationSchema);
-
-      await mongoose.connect(process.env.MONGODB_URI);
-      console.log("✅ Connected to MongoDB");
-
-      let totalSaved = 0;
-      // We process batches manually with insertMany or updateOne loop
-      // UpdateOne is better to avoid dup-key errors and update existing records
-      console.log("   Writing records...");
-      const bulkOps = deduped.map(station => ({
-        updateOne: {
-          filter: { changeuuid: station.changeuuid },
-          update: { $set: station },
-          upsert: true
-        }
-      }));
-
-      // execute bulk writes in chunks to avoid blowing up memory/bandwidth limits
-      const chunkSize = 500;
-      for (let i = 0; i < bulkOps.length; i += chunkSize) {
-        const chunk = bulkOps.slice(i, i + chunkSize);
-        await StationModel.bulkWrite(chunk, { ordered: false });
-        totalSaved += chunk.length;
-        console.log(`   Saved ${totalSaved} stations...`);
-      }
-
-      console.log(`✅ Uploaded ${totalSaved} stations to MongoDB`);
-      await mongoose.disconnect();
-    } catch (err) {
-      console.error("❌ MongoDB upload failed:", err.message);
-    }
-  } else {
-    console.log("\nℹ️  Skipping MongoDB upload: MONGODB_URI not found");
+  // ── Disconnect MongoDB ──────────────────────────────────────────────────────
+  if (mongoose) {
+    console.log(`\n☁️  Total uploaded to MongoDB: ${totalUploaded} stations`);
+    await mongoose.disconnect();
+    console.log("✅ Disconnected from MongoDB");
   }
-
 
   console.log("\n✨ Done!");
 }

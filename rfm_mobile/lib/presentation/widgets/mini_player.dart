@@ -109,14 +109,23 @@ class MiniPlayer extends ConsumerWidget {
             ),
 
             // Controls
-            IconButton(
-              icon: Icon(
-                radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                color: Theme.of(context).colorScheme.primary,
-                size: 28,
-              ),
-              onPressed: () => ref.read(radioControllerProvider.notifier).togglePlay(),
-            ),
+            radioState.isBuffering
+                ? SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  )
+                : IconButton(
+                    icon: Icon(
+                      radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 28,
+                    ),
+                    onPressed: () => ref.read(radioControllerProvider.notifier).togglePlay(),
+                  ),
           ],
         ),
       ),

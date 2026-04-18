@@ -11,6 +11,10 @@ class Station {
   final String? city;
   final String? language;
   final int? votes;
+  final String? frequency;
+  final int? bitrate;
+  final String? established;
+  final String? contactNumber;
 
   Station({
     required this.changeuuid,
@@ -25,6 +29,10 @@ class Station {
     this.city,
     this.language,
     this.votes,
+    this.frequency,
+    this.bitrate,
+    this.established,
+    this.contactNumber,
   });
 
   factory Station.fromJson(Map<String, dynamic> json) {
@@ -41,6 +49,10 @@ class Station {
       city: json['city'],
       language: json['language'],
       votes: json['votes'] is int ? json['votes'] : int.tryParse(json['votes']?.toString() ?? '0'),
+      frequency: json['frequency'],
+      bitrate: json['bitrate'] is int ? json['bitrate'] : int.tryParse(json['bitrate']?.toString() ?? ''),
+      established: json['established']?.toString(),
+      contactNumber: json['contact_number'],
     );
   }
 
@@ -58,6 +70,10 @@ class Station {
       'city': city,
       'language': language,
       'votes': votes,
+      'frequency': frequency,
+      'bitrate': bitrate,
+      'established': established,
+      'contact_number': contactNumber,
     };
   }
 
@@ -74,6 +90,10 @@ class Station {
     String? city,
     String? language,
     int? votes,
+    String? frequency,
+    int? bitrate,
+    String? established,
+    String? contactNumber,
   }) {
     return Station(
       changeuuid: changeuuid ?? this.changeuuid,
@@ -88,6 +108,10 @@ class Station {
       city: city ?? this.city,
       language: language ?? this.language,
       votes: votes ?? this.votes,
+      frequency: frequency ?? this.frequency,
+      bitrate: bitrate ?? this.bitrate,
+      established: established ?? this.established,
+      contactNumber: contactNumber ?? this.contactNumber,
     );
   }
 }

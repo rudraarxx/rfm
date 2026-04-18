@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/station.dart';
 import '../../core/theme/rfm_theme.dart';
 
-class StationListTile extends StatelessWidget {
+class StationListTile extends StatefulWidget {
   final Station station;
   final bool isActive;
   final VoidCallback onTap;
@@ -15,133 +15,168 @@ class StationListTile extends StatelessWidget {
   });
 
   @override
+  State<StationListTile> createState() => _StationListTileState();
+}
+
+class _StationListTileState extends State<StationListTile> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isActive ? RFMTheme.surfaceContainerHigh : RFMTheme.surfaceContainerLow,
-          borderRadius: BorderRadius.zero,
-        ),
-        child: Row(
-          children: [
-            // Logo Shielding (Technical Box)
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: RFMTheme.surfaceContainerLowest,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(
-                  color: RFMTheme.outline.withOpacity(0.08),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 4,
-                    offset: const Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: station.favicon != null && station.favicon!.isNotEmpty
-                    ? Image.network(
-                        station.favicon!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.radio, 
-                          color: RFMTheme.onSurface.withOpacity(0.05), 
-                          size: 18,
-                        ),
-                      )
-                    : Icon(
-                        Icons.radio, 
-                        color: RFMTheme.onSurface.withOpacity(0.05), 
-                        size: 18,
-                      ),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: widget.isActive ? 1.02 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: widget.isActive ? RFMTheme.surfaceContainerHigh : RFMTheme.surfaceContainerLow,
+            border: Border(
+              left: BorderSide(
+                color: widget.isActive ? RFMTheme.primaryContainer : Colors.transparent,
+                width: 4,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            boxShadow: [
+              if (widget.isActive)
+                BoxShadow(
+                  color: RFMTheme.primaryContainer.withOpacity(0.15),
+                  blurRadius: 20,
+                  offset: const Offset(-8, 0),
+                ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Logo in Digital Chassis
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  color: RFMTheme.surfaceContainerLowest,
+                  border: Border.all(
+                    color: RFMTheme.outline.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: widget.station.favicon != null && widget.station.favicon!.isNotEmpty
+                      ? Image.network(
+                          widget.station.favicon!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
+                        )
+                      : _buildPlaceholderIcon(),
+                ),
+              ),
+              const SizedBox(width: 20),
+              
+              // Station technical info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.station.name.toUpperCase(),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            letterSpacing: -0.5,
+                            color: widget.isActive ? Colors.white : Colors.white.withOpacity(0.85),
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    if (widget.station.tags != null && widget.station.tags!.isNotEmpty)
+                      Text(
+                        widget.station.tags!.split(',').map((t) => t.trim()).take(3).join(' & '),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: RFMTheme.onSurface.withOpacity(0.4),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (widget.station.city != null && widget.station.city!.isNotEmpty)
+                          _buildTechPill(context, widget.station.city!.toUpperCase()),
+                        if (widget.station.city != null && widget.station.city!.isNotEmpty)
+                          const SizedBox(width: 8),
+                        if (widget.station.frequency != null && widget.station.frequency!.isNotEmpty)
+                          _buildTechPill(context, widget.station.frequency!.toUpperCase()),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(width: 12),
+              
+              // Pulsing Signal Icon
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    station.name.toUpperCase(),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          letterSpacing: 0,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      _buildTechPill(context, station.state?.toUpperCase() ?? 'INDIA'),
-                      const SizedBox(width: 6),
-                      _buildTechPill(context, '${station.votes != null ? (station.votes! / 10).toStringAsFixed(1) : "104.2"} FM'),
-                    ],
+                  FadeTransition(
+                    opacity: widget.isActive ? _pulseController : const AlwaysStoppedAnimation(0.2),
+                    child: Icon(
+                      Icons.sensors_rounded,
+                      size: 20,
+                      color: widget.isActive ? RFMTheme.primaryContainer : Colors.white,
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 12),
-            // Custom Signal Icon (Bracketed)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '( (',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: RFMTheme.primaryContainer,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                Container(
-                  width: 4,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: const BoxDecoration(
-                    color: RFMTheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Text(
-                  ') )',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: RFMTheme.primaryContainer,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildPlaceholderIcon() {
+    return Icon(
+      Icons.radio_rounded,
+      color: RFMTheme.onSurface.withOpacity(0.1),
+      size: 24,
+    );
+  }
+
   Widget _buildTechPill(BuildContext context, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
         color: RFMTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.zero,
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: RFMTheme.onSurface.withOpacity(0.6),
-              fontSize: 8,
+              color: RFMTheme.onSurface.withOpacity(0.7),
+              fontSize: 9,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.5,
             ),
@@ -149,3 +184,4 @@ class StationListTile extends StatelessWidget {
     );
   }
 }
+

@@ -8,6 +8,7 @@ import '../../main.dart'; // To access radioHandler
 class RadioState {
   final Station? currentStation;
   final bool isPlaying;
+  final bool isBuffering;
   final double volume;
   final List<Station> stations;
   final String visualizerStyle;
@@ -15,6 +16,7 @@ class RadioState {
   RadioState({
     this.currentStation,
     this.isPlaying = false,
+    this.isBuffering = false,
     this.volume = 1.0,
     this.stations = const [],
     this.visualizerStyle = 'classic',
@@ -23,6 +25,7 @@ class RadioState {
   RadioState copyWith({
     Station? currentStation,
     bool? isPlaying,
+    bool? isBuffering,
     double? volume,
     List<Station>? stations,
     String? visualizerStyle,
@@ -30,6 +33,7 @@ class RadioState {
     return RadioState(
       currentStation: currentStation ?? this.currentStation,
       isPlaying: isPlaying ?? this.isPlaying,
+      isBuffering: isBuffering ?? this.isBuffering,
       volume: volume ?? this.volume,
       stations: stations ?? this.stations,
       visualizerStyle: visualizerStyle ?? this.visualizerStyle,
@@ -65,9 +69,12 @@ class RadioController extends StateNotifier<RadioState> {
       }
     });
 
-    radioHandler.playbackState.listen((playbackState) {
+    radioHandler.playbackState.listen((pbState) {
+      final isBuffering = pbState.processingState == AudioProcessingState.loading ||
+          pbState.processingState == AudioProcessingState.buffering;
       state = state.copyWith(
-        isPlaying: playbackState.playing,
+        isPlaying: pbState.playing && !isBuffering,
+        isBuffering: isBuffering,
       );
     });
   }

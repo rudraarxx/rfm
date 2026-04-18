@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/stations.dart';
 import '../../logic/providers/location_provider.dart';
 import '../models/station.dart';
 import '../services/station_api.dart';
@@ -9,15 +8,13 @@ class StationRepository {
 
   StationRepository({StationApi? api}) : _api = api ?? StationApi();
 
-  /// Fetch all stations from the API, falling back to hardcoded stations on failure.
+  /// Fetch all stations from the API.
   Future<List<Station>> getStations() async {
     try {
-      final stations = await _api.getStations();
-      if (stations.isNotEmpty) return stations;
+      return await _api.getStations();
     } catch (_) {
-      // API unavailable — fall back to bundled stations
+      return [];
     }
-    return fallbackStations;
   }
 
   /// Fetch stations filtered by [state] and optional [city].
@@ -28,10 +25,16 @@ class StationRepository {
     try {
       return await _api.getStations(state: state, city: city);
     } catch (_) {
-      // Filter fallback stations by state
-      return fallbackStations
-          .where((s) => s.state?.toLowerCase() == state.toLowerCase())
-          .toList();
+      return [];
+    }
+  }
+
+  /// Fetch stations for a specific city.
+  Future<List<Station>> getStationsByCity(String city) async {
+    try {
+      return await _api.getStations(city: city);
+    } catch (_) {
+      return [];
     }
   }
 
@@ -40,14 +43,7 @@ class StationRepository {
     try {
       return await _api.getStations(search: query);
     } catch (_) {
-      final q = query.toLowerCase();
-      return fallbackStations
-          .where((s) =>
-              s.name.toLowerCase().contains(q) ||
-              (s.tags?.toLowerCase().contains(q) ?? false) ||
-              (s.city?.toLowerCase().contains(q) ?? false) ||
-              (s.state?.toLowerCase().contains(q) ?? false))
-          .toList();
+      return [];
     }
   }
 
@@ -99,5 +95,5 @@ final cityStationsProvider = FutureProvider<List<Station>>((ref) async {
   // select() ensures we only rebuild when city string actually changes
   final city = ref.watch(locationProvider.select((s) => s.city));
   final repository = ref.read(stationRepositoryProvider);
-  return repository.searchStations(city);
+  return repository.getStationsByCity(city);
 });

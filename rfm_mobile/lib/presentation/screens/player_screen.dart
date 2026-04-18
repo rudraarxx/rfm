@@ -117,10 +117,12 @@ class PlayerScreen extends ConsumerWidget {
                         height: 160,
                       ),
                       GestureDetector(
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          ref.read(radioControllerProvider.notifier).togglePlay();
-                        },
+                        onTap: radioState.isBuffering
+                            ? null
+                            : () {
+                                HapticFeedback.mediumImpact();
+                                ref.read(radioControllerProvider.notifier).togglePlay();
+                              },
                         child: Container(
                           width: 80,
                           height: 80,
@@ -128,11 +130,22 @@ class PlayerScreen extends ConsumerWidget {
                             gradient: RFMTheme.primaryGradient,
                             shape: BoxShape.rectangle,
                           ),
-                          child: Icon(
-                            radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                            color: Colors.white,
-                            size: 32,
-                          ),
+                          child: radioState.isBuffering
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
+                                  color: Colors.white,
+                                  size: 32,
+                                ),
                         ),
                       ),
                     ],
