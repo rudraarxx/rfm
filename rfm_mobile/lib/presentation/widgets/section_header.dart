@@ -18,46 +18,53 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                subtitle.toUpperCase(),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: const Color(0xFFDA1A32),
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      fontSize: 10,
-                    ),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (actionText != null)
                 GestureDetector(
                   onTap: onActionTap,
-                  child: Text(
-                    actionText!.toUpperCase(),
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white24,
-                      letterSpacing: 1,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white24),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      actionText!,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            title.toUpperCase(),
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  letterSpacing: -0.5,
-                  height: 1.0,
-                  fontSize: 28,
-                ),
-          ),
+          if (subtitle.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white70,
+                  ),
+            ),
+          ],
         ],
       ),
     );

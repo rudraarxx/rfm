@@ -47,156 +47,91 @@ class _StationListTileState extends State<StationListTile> with SingleTickerProv
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
-      child: AnimatedScale(
-        scale: widget.isActive ? 1.02 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 24),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: widget.isActive ? RFMTheme.surfaceContainerHigh : RFMTheme.surfaceContainerLow,
-            border: Border(
-              left: BorderSide(
-                color: widget.isActive ? RFMTheme.primaryContainer : Colors.transparent,
-                width: 4,
+      child: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
+        child: Row(
+          children: [
+            // Rounded Thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                width: 56,
+                height: 56,
+                color: RFMTheme.surface,
+                child: widget.station.favicon != null && widget.station.favicon!.isNotEmpty
+                    ? Image.network(
+                        widget.station.favicon!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
+                      )
+                    : _buildPlaceholderIcon(),
               ),
             ),
-            boxShadow: [
-              if (widget.isActive)
-                BoxShadow(
-                  color: RFMTheme.primaryContainer.withOpacity(0.15),
-                  blurRadius: 20,
-                  offset: const Offset(-8, 0),
-                ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Logo in Digital Chassis
-              Container(
-                width: 68,
-                height: 68,
-                decoration: BoxDecoration(
-                  color: RFMTheme.surfaceContainerLowest,
-                  border: Border.all(
-                    color: RFMTheme.outline.withOpacity(0.1),
-                    width: 1,
+            const SizedBox(width: 16),
+            
+            // Station info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.station.name,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: widget.isActive ? RFMTheme.primary : Colors.white,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: widget.station.favicon != null && widget.station.favicon!.isNotEmpty
-                      ? Image.network(
-                          widget.station.favicon!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
-                        )
-                      : _buildPlaceholderIcon(),
-                ),
-              ),
-              const SizedBox(width: 20),
-              
-              // Station technical info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  const SizedBox(height: 4),
+                  if (widget.station.tags != null && widget.station.tags!.isNotEmpty)
                     Text(
-                      widget.station.name.toUpperCase(),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                            letterSpacing: -0.5,
-                            color: widget.isActive ? Colors.white : Colors.white.withOpacity(0.85),
+                      [
+                        if (widget.station.frequency != null) '${widget.station.frequency} FM',
+                        widget.station.tags!.split(',').first.trim()
+                      ].join(' • '),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white54,
+                            fontSize: 14,
                           ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
-                    if (widget.station.tags != null && widget.station.tags!.isNotEmpty)
-                      Text(
-                        widget.station.tags!.split(',').map((t) => t.trim()).take(3).join(' & '),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: RFMTheme.onSurface.withOpacity(0.4),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        if (widget.station.city != null && widget.station.city!.isNotEmpty)
-                          _buildTechPill(context, widget.station.city!.toUpperCase()),
-                        if (widget.station.city != null && widget.station.city!.isNotEmpty)
-                          const SizedBox(width: 8),
-                        if (widget.station.frequency != null && widget.station.frequency!.isNotEmpty)
-                          _buildTechPill(context, 'FM ${widget.station.frequency!.toUpperCase()}'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(width: 12),
-
-              // Right controls: favorite + signal
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (widget.onFavoriteTap != null)
-                    GestureDetector(
-                      onTap: widget.onFavoriteTap,
-                      child: Icon(
-                        widget.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                        size: 18,
-                        color: widget.isFavorite ? RFMTheme.primaryContainer : Colors.white24,
-                      ),
-                    ),
-                  if (widget.onFavoriteTap != null) const SizedBox(height: 8),
-                  FadeTransition(
-                    opacity: widget.isActive ? _pulseController : const AlwaysStoppedAnimation(0.2),
-                    child: Icon(
-                      Icons.sensors_rounded,
-                      size: 20,
-                      color: widget.isActive ? RFMTheme.primaryContainer : Colors.white,
-                    ),
-                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+            
+            const SizedBox(width: 12),
+
+            // Right controls
+            if (widget.onFavoriteTap != null)
+              IconButton(
+                onPressed: widget.onFavoriteTap,
+                icon: Icon(
+                  widget.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  size: 20,
+                  color: widget.isFavorite ? RFMTheme.primary : Colors.white24,
+                ),
+              ),
+            const Icon(
+              Icons.more_vert_rounded,
+              color: Colors.white24,
+              size: 20,
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildPlaceholderIcon() {
-    return Icon(
-      Icons.radio_rounded,
-      color: RFMTheme.onSurface.withOpacity(0.1),
-      size: 24,
-    );
-  }
-
-  Widget _buildTechPill(BuildContext context, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: RFMTheme.surfaceContainerLowest,
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: RFMTheme.onSurface.withOpacity(0.7),
-              fontSize: 9,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
-            ),
+    return Center(
+      child: Icon(
+        Icons.radio_rounded,
+        color: Colors.white.withOpacity(0.1),
+        size: 28,
       ),
     );
   }

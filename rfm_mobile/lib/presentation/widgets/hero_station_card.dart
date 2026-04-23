@@ -6,157 +6,96 @@ class HeroStationCard extends StatelessWidget {
   final Station station;
   final bool isPlaying;
   final VoidCallback onPlayTap;
+  final VoidCallback? onLongPress;
 
   const HeroStationCard({
     super.key,
     required this.station,
     required this.isPlaying,
     required this.onPlayTap,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 380,
-      width: double.infinity,
-      color: RFMTheme.surface,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Background Image (Right-aligned for asymmetry)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 40,
-            width: MediaQuery.of(context).size.width * 0.85,
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/vintage_radio_hero.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              foregroundDecoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    RFMTheme.surface,
-                    RFMTheme.surface.withOpacity(0.0),
-                  ],
-                  stops: const [0.0, 0.4],
-                ),
-              ),
-            ),
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Container(
+          height: 280,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: RFMTheme.surface,
+            image: station.favicon != null && station.favicon!.isNotEmpty
+                ? DecorationImage(
+                    image: NetworkImage(station.favicon!),
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.4),
+                      BlendMode.darken,
+                    ),
+                  )
+                : null,
           ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Spacer(),
-                // Large Asymmetrical Typography
-                Transform.translate(
-                  offset: const Offset(-4, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'THE IRON',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                              fontSize: 64,
-                              height: 0.85,
-                              letterSpacing: -0.04 * 64,
-                            ),
-                      ),
-                      Text(
-                        'RHYTHM',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                              fontSize: 64,
-                              height: 0.85,
-                              letterSpacing: -0.04 * 64,
-                            ),
-                      ),
-                    ],
+          child: Stack(
+            children: [
+              if (station.favicon == null || station.favicon!.isEmpty)
+                const Center(
+                  child: Icon(
+                    Icons.radio_rounded,
+                    color: Colors.white10,
+                    size: 120,
                   ),
                 ),
-                const SizedBox(height: 32),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Primary Gradient Button (Sharp Corners)
-                    GestureDetector(
-                      onTap: onPlayTap,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              Color(0xFFFF3B3B),
-                              Color(0xFFF45B69),
-                            ],
+                    Text(
+                      'Featured Station',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: RFMTheme.primary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
                           ),
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'LISTEN NOW',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
-                    const Spacer(),
-                    // Frequency Info (Technical Detail)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                    const SizedBox(height: 8),
+                    Text(
+                      station.name,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                            color: Colors.white,
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (station.tags != null && station.tags!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        station.tags!.split(',').take(3).join(' • ').toUpperCase(),
+                        style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    Row(
                       children: [
-                        Text(
-                          'FREQUENCY',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: RFMTheme.onSurface.withOpacity(0.35),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '104.2 MHZ',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                fontSize: 32,
-                                color: RFMTheme.onSurface,
-                              ),
+                        ElevatedButton.icon(
+                          onPressed: onPlayTap,
+                          icon: const Icon(Icons.play_arrow_rounded, size: 28),
+                          label: const Text('LISTEN NOW'),
                         ),
                       ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -2,124 +2,109 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RFMTheme {
-  // Brand Colors - The Analog Machinist
-  static const Color surface = Color(0xFF131313);
-  static const Color surfaceContainerLowest = Color(0xFF0E0E0E);
-  static const Color surfaceContainerLow = Color(0xFF1A1A1A);
-  static const Color surfaceContainerHigh = Color(0xFF2A2A2A);
+  // Brand Colors - YouTube Music Style
+  static const Color background = Color(0xFF030303);
+  static const Color surface = Color(0xFF0F0F0F);
+  static const Color surfaceContainer = Color(0xFF212121);
   
-  static const Color primary = Color(0xFFFFB3B0);
-  static const Color primaryContainer = Color(0xFFDA1A32);
-  static const Color onSurface = Color(0xFFE5E2E1);
-  static const Color outline = Color(0xFFAD8886);
+  static const Color primary = Color(0xFFFF0000); // YouTube Red
+  static const Color onSurface = Color(0xFFFFFFFF);
+  static const Color secondaryText = Color(0xFFAAAAAA);
   static const Color pureWhite = Color(0xFFFFFFFF);
-
-  // Gradient for Primary Actions
-  static const LinearGradient primaryGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [primary, primaryContainer],
-    stops: [0.0, 1.0],
-    transform: GradientRotation(135 * 3.14159 / 180),
-  );
 
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     useMaterial3: true,
-    scaffoldBackgroundColor: surface,
+    scaffoldBackgroundColor: background,
     colorScheme: const ColorScheme.dark(
       primary: primary,
-      onPrimary: surface,
-      primaryContainer: primaryContainer,
-      onPrimaryContainer: Colors.white,
-      surface: surface,
+      onPrimary: Colors.white,
+      surface: background,
       onSurface: onSurface,
-      surfaceContainerLowest: surfaceContainerLowest,
-      surfaceContainerLow: surfaceContainerLow,
-      surfaceContainerHigh: surfaceContainerHigh,
-      outline: outline,
+      surfaceContainer: surface,
+      secondary: secondaryText,
     ),
     
-    // Typography: Technical Precision (Space Grotesk) vs Editorial Clarity (Work Sans)
+    // Typography: Modern & Clean (Roboto)
     textTheme: TextTheme(
-      displayLarge: GoogleFonts.spaceGrotesk(
-        fontSize: 57,
-        fontWeight: FontWeight.bold,
-        color: pureWhite,
-        letterSpacing: -0.02 * 57,
-      ),
-      displayMedium: GoogleFonts.spaceGrotesk(
-        fontSize: 45,
-        fontWeight: FontWeight.bold,
-        color: pureWhite,
-        letterSpacing: -0.02 * 45,
-      ),
-      headlineLarge: GoogleFonts.spaceGrotesk(
+      displayLarge: GoogleFonts.roboto(
         fontSize: 32,
         fontWeight: FontWeight.bold,
         color: pureWhite,
-        letterSpacing: -0.02 * 32,
       ),
-      titleLarge: GoogleFonts.workSans(
-        fontSize: 22,
+      displayMedium: GoogleFonts.roboto(
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+        color: pureWhite,
+      ),
+      headlineLarge: GoogleFonts.roboto(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: pureWhite,
+      ),
+      headlineMedium: GoogleFonts.roboto(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: pureWhite,
+      ),
+      titleLarge: GoogleFonts.roboto(
+        fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: onSurface,
-        height: 1.4,
+        color: pureWhite,
       ),
-      bodyLarge: GoogleFonts.workSans(
+      bodyLarge: GoogleFonts.roboto(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: onSurface,
-        height: 1.6,
+        color: pureWhite,
       ),
-      bodyMedium: GoogleFonts.workSans(
+      bodyMedium: GoogleFonts.roboto(
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: onSurface.withOpacity(0.8),
-        height: 1.5,
+        color: secondaryText,
       ),
-      labelSmall: GoogleFonts.spaceGrotesk(
-        fontSize: 11,
-        fontWeight: FontWeight.w900,
-        color: primary,
-        letterSpacing: 1.5,
+      labelSmall: GoogleFonts.roboto(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: secondaryText,
+        letterSpacing: 0.5,
       ),
     ),
 
-    // Component Themes: Sharp Corners
-    cardTheme: const CardThemeData(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      color: surfaceContainerLow,
+    // Component Themes: Rounded & Premium
+    cardTheme: CardThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: surface,
       elevation: 0,
     ),
     
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: primaryContainer,
-        foregroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        textStyle: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        textStyle: GoogleFonts.roboto(fontWeight: FontWeight.bold),
       ),
+    ),
+
+    chipTheme: ChipThemeData(
+      backgroundColor: surfaceContainer,
+      labelStyle: const TextStyle(color: Colors.white),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      side: BorderSide.none,
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: surfaceContainerHigh,
-      border: const UnderlineInputBorder(
-        borderSide: BorderSide(color: outline, width: 2),
-        borderRadius: BorderRadius.zero,
+      fillColor: surfaceContainer,
+      border: OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(24),
       ),
-      enabledBorder: const UnderlineInputBorder(
-        borderSide: BorderSide(color: outline, width: 2),
-        borderRadius: BorderRadius.zero,
-      ),
-      focusedBorder: const UnderlineInputBorder(
-        borderSide: BorderSide(color: primary, width: 2),
-        borderRadius: BorderRadius.zero,
-      ),
-      labelStyle: GoogleFonts.spaceGrotesk(color: outline),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      hintStyle: const TextStyle(color: secondaryText),
     ),
   );
 
-  static ThemeData lightTheme = darkTheme; // Defaulting to dark for The Machinist aesthetic
+  static ThemeData lightTheme = darkTheme;
 }

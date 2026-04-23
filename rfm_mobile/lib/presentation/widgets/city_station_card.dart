@@ -54,130 +54,71 @@ class _CityStationCardState extends State<CityStationCard> with TickerProviderSt
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        width: 300,
+      child: Container(
+        width: 160,
         margin: const EdgeInsets.only(left: 24, bottom: 20),
-        decoration: BoxDecoration(
-          color: widget.isActive ? RFMTheme.surfaceContainerHigh : RFMTheme.surfaceContainerLow,
-          border: Border(
-            top: BorderSide(
-              color: widget.isActive ? RFMTheme.primaryContainer : Colors.transparent,
-              width: 3,
-            ),
-          ),
-          boxShadow: [
-            if (widget.isActive)
-              BoxShadow(
-                color: RFMTheme.primaryContainer.withOpacity(0.1),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
-              ),
-          ],
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // High-Impact Image Area
-            ClipRect(
-              child: SizedBox(
-                height: 220,
-                width: double.infinity,
+            // Rounded Image Area
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: AspectRatio(
+                aspectRatio: 1,
                 child: Stack(
                   children: [
-                    // Zooming Background Image
-                    AnimatedScale(
-                      scale: widget.isActive ? 1.1 : 1.0,
-                      duration: const Duration(milliseconds: 1000),
-                      curve: Curves.easeOutCubic,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: RFMTheme.surfaceContainerLowest,
-                          image: widget.station.favicon != null && widget.station.favicon!.isNotEmpty
-                              ? DecorationImage(
-                                  image: NetworkImage(widget.station.favicon!),
-                                  fit: BoxFit.cover,
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(widget.isActive ? 0.2 : 0.4),
-                                    BlendMode.darken,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        child: widget.station.favicon == null || widget.station.favicon!.isEmpty
-                            ? Center(
+                    Container(
+                      color: RFMTheme.surface,
+                      child: widget.station.favicon != null && widget.station.favicon!.isNotEmpty
+                          ? Image.network(
+                              widget.station.favicon!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) => Center(
                                 child: Icon(
                                   Icons.radio_rounded,
-                                  color: RFMTheme.onSurface.withOpacity(0.05),
-                                  size: 80,
+                                  color: Colors.white.withOpacity(0.1),
+                                  size: 48,
                                 ),
-                              )
-                            : null,
-                      ),
-                    ),
-                    
-                    // Live Scanning Line Animation
-                    if (widget.isActive)
-                      AnimatedBuilder(
-                        animation: _scanController,
-                        builder: (context, child) {
-                          return Positioned(
-                            top: 220 * _scanController.value,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              height: 1,
-                              decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.15),
-                                    blurRadius: 2,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
+                              ),
+                            )
+                          : Center(
+                              child: Icon(
+                                Icons.radio_rounded,
+                                color: Colors.white.withOpacity(0.1),
+                                size: 48,
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    
-                    // Favorite (Top-Right)
-                    if (widget.onFavoriteTap != null)
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: widget.onFavoriteTap,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            color: Colors.black45,
-                            child: Icon(
-                              widget.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                              size: 16,
-                              color: widget.isFavorite ? RFMTheme.primaryContainer : Colors.white54,
-                            ),
+                    ),
+                    if (widget.isActive)
+                      Container(
+                        color: Colors.black38,
+                        child: const Center(
+                          child: Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 48,
                           ),
                         ),
                       ),
-
-                    // Frequency Tag (Bottom-Left)
-                    if (widget.station.frequency != null && widget.station.frequency!.isNotEmpty)
+                    // Favorite (Top-Right)
+                    if (widget.onFavoriteTap != null)
                       Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: FadeTransition(
-                          opacity: widget.isActive ? _pulseController : const AlwaysStoppedAnimation(1.0),
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: widget.onFavoriteTap,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            color: RFMTheme.primaryContainer,
-                            child: Text(
-                              'FM ${widget.station.frequency!.toUpperCase()}',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0,
-                                  ),
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.black45,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              widget.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              size: 16,
+                              color: widget.isFavorite ? RFMTheme.primary : Colors.white,
                             ),
                           ),
                         ),
@@ -186,37 +127,30 @@ class _CityStationCardState extends State<CityStationCard> with TickerProviderSt
                 ),
               ),
             ),
-            
+            const SizedBox(height: 12),
             // Text Content Area
-            Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.station.name.toUpperCase(),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                          letterSpacing: -0.5,
-                          color: widget.isActive ? Colors.white : Colors.white.withOpacity(0.9),
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            Text(
+              widget.station.name,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: widget.isActive ? RFMTheme.primary : Colors.white,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.station.tags?.split(',').map((t) => t.trim()).take(2).join(' & ') ?? 'Transmitting...',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: RFMTheme.onSurface.withOpacity(0.4),
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              [
+                if (widget.station.frequency != null && widget.station.frequency!.isNotEmpty) '${widget.station.frequency} FM',
+                widget.station.tags?.split(',').first.trim() ?? 'Radio'
+              ].join(' • '),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 12,
+                    color: Colors.white54,
                   ),
-                ],
-              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

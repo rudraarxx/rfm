@@ -13,6 +13,7 @@ import '../../logic/providers/location_provider.dart';
 import '../../logic/providers/favorites_provider.dart';
 import '../../logic/providers/history_provider.dart';
 import '../widgets/station_detail_sheet.dart';
+import '../widgets/error_state_widget.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -59,6 +60,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     ref.listen<LocationState>(locationProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Location unavailable. Showing ${next.city}.'),
@@ -69,76 +71,106 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
 
     return Scaffold(
-      backgroundColor: RFMTheme.surface,
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Main Scrollable Content
           SafeArea(
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // Editorial App Bar (Asymmetrical)
+                // Minimalist App Bar
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Row(
                           children: [
-                            const Icon(
-                              Icons.equalizer_rounded,
-                              color: RFMTheme.primaryContainer,
-                              size: 24,
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: RFMTheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.radio_rounded, color: Colors.white, size: 20),
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'THE MACHINIST',
-                              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                    fontSize: 20,
-                                    letterSpacing: 1,
+                              'FORGE',
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -1,
                                   ),
                             ),
                           ],
                         ),
-                        GestureDetector(
-                          onTap: () => _showLocationDialog(context, ref),
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              color: RFMTheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.zero,
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.search_rounded, color: Colors.white),
+                              onPressed: () {
+                                // Search functionality
+                              },
                             ),
-                            child: Icon(
-                              Icons.location_on_outlined,
-                              color: locationState.isLoading ? RFMTheme.primaryContainer : RFMTheme.onSurface.withOpacity(0.4),
-                              size: 24,
+                            GestureDetector(
+                              onTap: () => _showLocationDialog(context, ref),
+                              child: CircleAvatar(
+                                radius: 16,
+                                backgroundColor: RFMTheme.surface,
+                                child: Icon(
+                                  Icons.location_on_rounded,
+                                  color: locationState.isLoading ? RFMTheme.primary : Colors.white70,
+                                  size: 18,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ),
+                
+                // Content Filter Chips (YouTube style)
+                SliverToBoxAdapter(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    child: Row(
+                      children: [
+                        _buildFilterChip(context, 'Relax', isSelected: true),
+                        _buildFilterChip(context, 'Energize'),
+                        _buildFilterChip(context, 'Workout'),
+                        _buildFilterChip(context, 'Focus'),
+                        _buildFilterChip(context, 'Commute'),
+                      ],
+                    ),
+                  ),
+                ),
+
                 SliverToBoxAdapter(
                   child: stationsAsync.when(
                     data: (stations) {
-                      final currentStation = radioState.currentStation ?? stations.first;
+                      final currentStation = radioState.currentStation ?? (stations.isNotEmpty ? stations.first : null);
+                      if (currentStation == null) return const SizedBox.shrink();
                       return HeroStationCard(
                         station: currentStation,
                         isPlaying: radioState.isPlaying,
                         onPlayTap: () => ref.read(radioControllerProvider.notifier).setStation(currentStation, queue: stations),
+                        onLongPress: () => showStationDetail(context, currentStation),
                       );
                     },
-                    loading: () => const SizedBox(height: 380, child: Center(child: CircularProgressIndicator())),
-                    error: (_, __) => const SizedBox.shrink(),
+                    loading: () => const SizedBox(height: 280, child: Center(child: CircularProgressIndicator())),
+                    error: (err, st) => SizedBox(
+                      height: 280,
+                      child: SignalLostWidget(
+                        onRetry: () => ref.refresh(stationsProvider),
+                      ),
+                    ),
                   ),
                 ),
-
-                // Editorial Spacer
-                const SliverToBoxAdapter(child: SizedBox(height: 48)),
 
                 // Recent Transmissions Section
                 if (history.isNotEmpty)
@@ -147,11 +179,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SectionHeader(
-                          title: 'Recent\nTransmissions',
-                          subtitle: 'Last played',
+                          title: 'Listen again',
+                          subtitle: '',
                         ),
                         SizedBox(
-                          height: 360,
+                          height: 240,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
@@ -170,12 +202,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 48),
                       ],
                     ),
                   ),
 
-                // 2. In Your City Section (Horizontal Rail)
+                // 2. Local Stations Section
                 SliverToBoxAdapter(
                   child: ref.watch(cityStationsProvider).when(
                     data: (cityStations) {
@@ -185,12 +216,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SectionHeader(
-                            title: 'Local\nTransmission',
-                            subtitle: 'In ${locationState.city}',
-                            actionText: 'Scan All',
+                            title: 'Quick picks',
+                            subtitle: 'Based on ${locationState.city}',
+                            actionText: 'Play all',
+                            onActionTap: () => ref.read(radioControllerProvider.notifier).setStation(cityStations.first, queue: cityStations),
                           ),
                           SizedBox(
-                            height: 360,
+                            height: 240,
                             child: ListView.builder(
                               controller: _cityScrollController,
                               scrollDirection: Axis.horizontal,
@@ -210,112 +242,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               },
                             ),
                           ),
-                          // Machinist Scroll Indicator
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 2,
-                                  width: double.infinity,
-                                  color: Colors.white.withOpacity(0.05),
-                                ),
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 100),
-                                  height: 2,
-                                  width: MediaQuery.of(context).size.width * 0.3 + 
-                                         (MediaQuery.of(context).size.width * 0.7 * _scrollProgress),
-                                  color: RFMTheme.primaryContainer,
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       );
                     },
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'LOCAL SIGNAL LOST',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: RFMTheme.primaryContainer,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: () => ref.refresh(cityStationsProvider),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              color: RFMTheme.surfaceContainerHigh,
-                              child: Text(
-                                'RETRY',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: RFMTheme.onSurface.withValues(alpha: 0.6),
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    error: (err, st) => SignalLostWidget(
+                      onRetry: () => ref.refresh(cityStationsProvider),
                     ),
                   ),
                 ),
 
-                // Editorial Spacer
-                const SliverToBoxAdapter(child: SizedBox(height: 48)),
-
-                // Saved Frequencies Section
-                if (favorites.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SectionHeader(
-                          title: 'Saved\nFrequencies',
-                          subtitle: 'Your stations',
-                        ),
-                        stationsAsync.when(
-                          data: (stations) {
-                            final saved = stations.where((s) => favorites.contains(s.changeuuid)).toList();
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: saved.length,
-                              itemBuilder: (context, index) {
-                                final station = saved[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 4),
-                                  child: StationListTile(
-                                    station: station,
-                                    isActive: radioState.currentStation?.changeuuid == station.changeuuid,
-                                    onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: saved),
-                                    isFavorite: true,
-                                    onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
-                                    onLongPress: () => showStationDetail(context, station),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          loading: () => const SizedBox.shrink(),
-                          error: (err, st) => const SizedBox.shrink(),
-                        ),
-                        const SizedBox(height: 48),
-                      ],
-                    ),
-                  ),
-
-                // 3. All India Radios (2+1 Staggered Layout)
+                // Recommended Section
                 const SliverToBoxAdapter(
                   child: SectionHeader(
-                    title: 'National\nNetwork',
-                    subtitle: 'All India Radios',
+                    title: 'Recommended for you',
+                    subtitle: '',
                   ),
                 ),
 
@@ -326,67 +267,66 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final station = stations[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: StationListTile(
-                              station: station,
-                              isActive: radioState.currentStation?.changeuuid == station.changeuuid,
-                              onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: stations),
-                              isFavorite: favorites.contains(station.changeuuid),
-                              onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
-                              onLongPress: () => showStationDetail(context, station),
-                            ),
+                          return StationListTile(
+                            station: station,
+                            isActive: radioState.currentStation?.changeuuid == station.changeuuid,
+                            onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: stations),
+                            isFavorite: favorites.contains(station.changeuuid),
+                            onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
+                            onLongPress: () => showStationDetail(context, station),
                           );
                         },
-                        childCount: stations.length,
+                        childCount: stations.length > 20 ? 20 : stations.length, // Limit for better performance on mobile
                       ),
                     ),
                   ),
                   loading: () => const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (err, st) => SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'NATIONAL SIGNAL LOST',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: RFMTheme.primaryContainer,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: () => ref.refresh(stationsProvider),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              color: RFMTheme.surfaceContainerHigh,
-                              child: Text(
-                                'RETRY',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: RFMTheme.onSurface.withValues(alpha: 0.6),
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  error: (err, st) => SliverFillRemaining(
+                    child: SignalLostWidget(
+                      onRetry: () => ref.refresh(stationsProvider),
                     ),
                   ),
                 ),
 
                 // Bottom padding for mini-player
                 const SliverToBoxAdapter(
-                  child: SizedBox(height: 140),
+                  child: SizedBox(height: 120),
                 ),
               ],
             ),
           ),
+          // Floating Mini Player
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: MiniPlayer(),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(BuildContext context, String label, {bool isSelected = false}) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (val) {},
+        backgroundColor: Colors.white10,
+        selectedColor: Colors.white,
+        checkmarkColor: Colors.black,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.black : Colors.white,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide.none,
+        ),
       ),
     );
   }
@@ -397,14 +337,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: RFMTheme.surfaceContainerHigh,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        title: Text(
-          'SELECT LOCATION',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: RFMTheme.primaryContainer,
-            fontWeight: FontWeight.w900,
-          ),
+        backgroundColor: const Color(0xFF212121),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text(
+          'Change location',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -412,7 +349,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             TextField(
               controller: cityController,
               autofocus: true,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 hintText: 'Enter City Name',
                 hintStyle: TextStyle(color: Colors.white24),
@@ -435,17 +372,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'CANCEL',
-              style: TextStyle(color: RFMTheme.onSurface.withOpacity(0.4)),
-            ),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white70)),
           ),
           TextButton(
             onPressed: () {
               ref.read(locationProvider.notifier).updateCity(cityController.text);
               Navigator.pop(context);
             },
-            child: const Text('CONFIRM', style: TextStyle(color: RFMTheme.primaryContainer)),
+            child: const Text('CONFIRM', style: TextStyle(color: RFMTheme.primary)),
           ),
         ],
       ),

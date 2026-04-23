@@ -15,7 +15,7 @@ void main() async {
     builder: () => RadioHandler(),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.rfm.mobile.channel.audio',
-      androidNotificationChannelName: 'RFM Radio Playback',
+      androidNotificationChannelName: 'Retro FM Playback',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
     ),
@@ -30,7 +30,7 @@ class RFMApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'RFM Music OS',
+      title: 'Retro FM',
       // The Analog Machinist is a dark-first system
       theme: RFMTheme.darkTheme,
       darkTheme: RFMTheme.darkTheme,

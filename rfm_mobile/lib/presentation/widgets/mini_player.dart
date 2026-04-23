@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../logic/controllers/radio_controller.dart';
 import '../../logic/providers/sleep_timer_provider.dart';
 import '../screens/player_screen.dart';
+import '../../core/theme/rfm_theme.dart';
 import 'glass_container.dart';
 
 class MiniPlayer extends ConsumerWidget {
@@ -13,7 +14,6 @@ class MiniPlayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final radioState = ref.watch(radioControllerProvider);
-    final sleepTimer = ref.watch(sleepTimerProvider);
     final station = radioState.currentStation;
 
     if (station == null) return const SizedBox.shrink();
@@ -36,30 +36,34 @@ class MiniPlayer extends ConsumerWidget {
           ),
         );
       },
-      child: GlassContainer(
-        borderRadius: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.9),
+      child: Container(
+        height: 72,
+        decoration: BoxDecoration(
+          color: const Color(0xFF121212).withOpacity(0.95),
+          border: const Border(
+            top: BorderSide(color: Colors.white12, width: 0.5),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
             // Artwork
             Hero(
               tag: 'player-art',
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerLowest,
-                  image: station.favicon != null
-                      ? DecorationImage(
-                          image: NetworkImage(station.favicon!),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  color: RFMTheme.surface,
+                  child: station.favicon != null && station.favicon!.isNotEmpty
+                      ? Image.network(
+                          station.favicon!,
                           fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.music_note, color: Colors.white24),
                         )
-                      : null,
+                      : const Icon(Icons.music_note, color: Colors.white24),
                 ),
-                child: station.favicon == null
-                    ? Icon(Icons.music_note, color: Theme.of(context).colorScheme.primary, size: 24)
-                    : null,
               ),
             ),
             const SizedBox(width: 16),
@@ -71,85 +75,75 @@ class MiniPlayer extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    station.name.toUpperCase(),
+                    station.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      letterSpacing: -0.5,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: radioState.isPlaying 
-                              ? Theme.of(context).colorScheme.primaryContainer 
-                              : Colors.white24,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'ANALYZING FREQUENCY...',
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    station.tags?.split(',').first ?? 'Radio',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white60,
+                    ),
                   ),
                 ],
               ),
             ),
 
-            // Sleep timer badge
-            if (sleepTimer != null)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.timer_outlined, size: 12, color: Color(0xFFD4AF37)),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${sleepTimer.inMinutes}:${(sleepTimer.inSeconds % 60).toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFFD4AF37),
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+            // Sleep Timer Indicator (PRD 3.3 / APP_FLOW)
+            Consumer(
+              builder: (context, ref, _) {
+                final sleepTimer = ref.watch(sleepTimerProvider);
+                if (sleepTimer == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.timer_outlined, size: 14, color: RFMTheme.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${sleepTimer.inMinutes}m',
+                        style: const TextStyle(color: RFMTheme.primary, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    ],
+                  ),
+                );
+              },
+            ),
 
             // Controls
             radioState.isBuffering
-                ? SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Theme.of(context).colorScheme.primary,
+                ? const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     ),
                   )
                 : IconButton(
                     icon: Icon(
-                      radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 28,
+                      radioState.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 32,
                     ),
                     onPressed: () => ref.read(radioControllerProvider.notifier).togglePlay(),
                   ),
+            const SizedBox(width: 4),
+            IconButton(
+              icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 32),
+              onPressed: radioState.hasNext
+                  ? () => ref.read(radioControllerProvider.notifier).skipToNext()
+                  : null,
+            ),
           ],
         ),
       ),

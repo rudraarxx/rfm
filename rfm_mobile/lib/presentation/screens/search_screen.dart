@@ -8,6 +8,7 @@ import '../../logic/providers/favorites_provider.dart';
 import '../widgets/station_detail_sheet.dart';
 import '../../logic/controllers/radio_controller.dart';
 import '../widgets/station_list_tile.dart';
+import '../widgets/error_state_widget.dart';
 
 // ── Search UI State ──────────────────────────────────────────────────────────
 
@@ -154,299 +155,139 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final favorites = ref.watch(favoritesProvider);
 
     return Scaffold(
-      backgroundColor: RFMTheme.surface,
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.black,
         elevation: 0,
-        leading: const Padding(
-          padding: EdgeInsets.only(left: 24),
-          child: Icon(Icons.grid_view_rounded, color: RFMTheme.primaryContainer, size: 24),
+        title: const Text(
+          'SCAN',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2),
         ),
-        title: Text(
-          'STATION FINDER',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.account_circle_outlined, color: Colors.white24),
-          ),
-          const SizedBox(width: 16),
-        ],
+        centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-
-            // Editorial Hero Title
-            RichText(
-              text: TextSpan(
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 48,
-                      height: 0.9,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                    ),
-                children: [
-                  const TextSpan(text: 'TUNE '),
-                  TextSpan(
-                    text: 'INTO\n',
-                    style: TextStyle(color: RFMTheme.primaryContainer),
-                  ),
-                  const TextSpan(text: 'THE VOID'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-
-            // ── Text Search Bar ──────────────────────────────────────────────
-            Container(
-              decoration: const BoxDecoration(
-                color: RFMTheme.surfaceContainerLow,
-                borderRadius: BorderRadius.zero,
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF212121),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
                 controller: _searchController,
                 onChanged: (val) {
-                  // Debounce: only update provider if value has actually changed
-                  if (val == searchState.query) return;
-                  ref.read(searchUIProvider.notifier).state = SearchUIState(query: val);
+                  ref.read(searchUIProvider.notifier).state = searchState.copyWith(query: val);
                 },
                 style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'SEARCH STATIONS',
-                  hintStyle: TextStyle(
-                    color: RFMTheme.onSurface.withOpacity(0.2),
-                    fontWeight: FontWeight.bold,
-                  ),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white24),
+                decoration: const InputDecoration(
+                  hintText: 'Search stations...',
+                  hintStyle: TextStyle(color: Colors.white38),
+                  prefixIcon: Icon(Icons.search_rounded, color: Colors.white38),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                  contentPadding: EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+          ),
 
-            // ── Territory Filter ─────────────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              color: RFMTheme.surfaceContainerLowest.withOpacity(0.5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'LOCATION FINDER',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: RFMTheme.primaryContainer,
-                          fontWeight: FontWeight.w900,
-                        ),
+          // Location Filters (PRD 3.2 Hierarchy)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                // State Selector
+                _FilterButton(
+                  label: searchState.selectedState ?? 'All India',
+                  isSelected: searchState.selectedState != null,
+                  onTap: () => _showStatePicker(context, ref),
+                ),
+                const SizedBox(width: 8),
+                // City Selector (Internal Hierarchy)
+                if (searchState.selectedState != null)
+                  _FilterButton(
+                    label: searchState.selectedCity ?? 'All Cities',
+                    isSelected: searchState.selectedCity != null,
+                    onTap: () => _showCityPicker(context, ref, searchState.selectedState!),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'FILTER BY\nTERRITORY',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          height: 1.1,
-                        ),
-                  ),
-                ],
-              ),
+                const SizedBox(width: 8),
+                // Language Selector
+                _FilterButton(
+                  label: searchState.selectedLanguage ?? 'Any Language',
+                  isSelected: searchState.selectedLanguage != null,
+                  onTap: () => _showLanguagePicker(context, ref),
+                ),
+                const SizedBox(width: 16),
+                Container(width: 1, height: 24, color: Colors.white12),
+                const SizedBox(width: 16),
+              ],
             ),
+          ),
 
-            // State Dropdown
-            _buildDropdown(
-              label: 'SELECT STATE',
-              value: searchState.selectedState,
-              items: statesAsync.value ?? [],
-              onChanged: (val) {
-                _searchController.clear();
-                // Reset city when state changes
-                ref.read(searchUIProvider.notifier).state =
-                    SearchUIState(selectedState: val);
-              },
-            ),
-
-            // City Dropdown — only shown when a state is selected
-            if (searchState.selectedState != null)
-              Builder(builder: (context) {
-                final citiesAsync = ref.watch(
-                  citiesForStateProvider(searchState.selectedState!),
-                );
-                return _buildDropdown(
-                  label: 'SELECT CITY',
-                  value: searchState.selectedCity,
-                  items: citiesAsync.value ?? [],
-                  onChanged: (val) {
-                    ref.read(searchUIProvider.notifier).state =
-                        searchState.copyWith(selectedCity: val, query: '');
-                    _searchController.clear();
-                  },
-                );
-              }),
-
-            // Language Dropdown
-            if (languagesAsync.value?.isNotEmpty ?? false)
-              _buildDropdown(
-                label: 'SELECT LANGUAGE',
-                value: searchState.selectedLanguage,
-                items: languagesAsync.value!,
-                onChanged: (val) {
-                  ref.read(searchUIProvider.notifier).state =
-                      searchState.copyWith(selectedLanguage: val);
+          // Filters / Categories (Tags)
+          if (tagsAsync.value?.isNotEmpty ?? false)
+            SizedBox(
+              height: 56,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: tagsAsync.value!.length,
+                itemBuilder: (context, index) {
+                  final tag = tagsAsync.value![index];
+                  final isSelected = searchState.selectedTag == tag;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(tag),
+                      selected: isSelected,
+                      onSelected: (_) {
+                        ref.read(searchUIProvider.notifier).state =
+                            searchState.copyWith(selectedTag: isSelected ? null : tag);
+                      },
+                      backgroundColor: Colors.white10,
+                      selectedColor: Colors.white,
+                      checkmarkColor: Colors.black,
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.black : Colors.white70,
+                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: BorderSide.none,
+                    ),
+                  );
                 },
-                clearable: true,
-                onClear: () => ref.read(searchUIProvider.notifier).state =
-                    searchState.copyWith(selectedLanguage: null),
               ),
+            ),
 
-            // Tag Chips
-            if (tagsAsync.value?.isNotEmpty ?? false) ...[
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'FILTER BY GENRE',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Colors.white24,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: tagsAsync.value!.map((tag) {
-                        final isSelected = searchState.selectedTag == tag;
-                        return GestureDetector(
-                          onTap: () {
-                            ref.read(searchUIProvider.notifier).state =
-                                searchState.copyWith(
-                              selectedTag: isSelected ? null : tag,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? RFMTheme.primaryContainer.withValues(alpha: 0.15)
-                                  : RFMTheme.surfaceContainerLowest,
-                              border: Border.all(
-                                color: isSelected
-                                    ? RFMTheme.primaryContainer.withValues(alpha: 0.5)
-                                    : Colors.white10,
-                              ),
-                            ),
-                            child: Text(
-                              tag.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                                color: isSelected ? RFMTheme.primaryContainer : Colors.white38,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 48),
-
-            // ── Results Header ───────────────────────────────────────────────
-            if (searchState.selectedCity != null ||
-                searchState.query.isNotEmpty ||
-                searchState.selectedLanguage != null ||
-                searchState.selectedTag != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
-                            fontSize: 12,
-                          ),
+          // Results
+          Expanded(
+            child: stationsAsync.when(
+              data: (stations) {
+                if (stations.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const TextSpan(text: 'STATIONS IN '),
-                        TextSpan(
-                          text: (searchState.selectedCity ?? searchState.query)
-                              .toUpperCase(),
-                          style: TextStyle(color: RFMTheme.primaryContainer),
+                        Icon(Icons.wifi_off_rounded, color: Colors.white10, size: 64),
+                        SizedBox(height: 16),
+                        Text(
+                          'NO SIGNAL FOUND',
+                          style: TextStyle(color: Colors.white38, fontWeight: FontWeight.bold, letterSpacing: 2),
                         ),
                       ],
-                    ),
-                  ),
-                  stationsAsync.maybeWhen(
-                    data: (list) => Text(
-                      '${list.length} UNITS FOUND',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.white24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    orElse: () => const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-
-            const SizedBox(height: 24),
-
-            // ── Results List ─────────────────────────────────────────────────
-            stationsAsync.when(
-              data: (stations) {
-                if (stations.isEmpty &&
-                    (searchState.selectedCity != null ||
-                        searchState.query.isNotEmpty)) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 48),
-                      child: Text(
-                        'NO SIGNAL FOUND',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.white24,
-                              fontWeight: FontWeight.w900,
-                            ),
-                      ),
                     ),
                   );
                 }
                 return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 100),
                   itemCount: stations.length,
                   itemBuilder: (context, index) {
                     final station = stations[index];
                     return StationListTile(
                       station: station,
-                      isActive: ref
-                              .watch(radioControllerProvider)
-                              .currentStation
-                              ?.changeuuid ==
-                          station.changeuuid,
-                      onTap: () => ref.read(radioControllerProvider.notifier).setStation(
-                            station,
-                            queue: List<Station>.from(stations),
-                          ),
+                      isActive: ref.watch(radioControllerProvider).currentStation?.changeuuid == station.changeuuid,
+                      onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: stations),
                       isFavorite: favorites.contains(station.changeuuid),
                       onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
                       onLongPress: () => showStationDetail(context, station),
@@ -454,145 +295,150 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   },
                 );
               },
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
-                child: Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator(color: RFMTheme.primary)),
+              error: (err, st) => SignalLostWidget(
+                onRetry: () => ref.refresh(filteredStationsProvider),
               ),
-              error: (err, st) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 48),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'SIGNAL LOST',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: RFMTheme.primaryContainer,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () => ref.refresh(filteredStationsProvider),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        color: RFMTheme.surfaceContainerHigh,
-                        child: Text(
-                          'RETRY',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: RFMTheme.onSurface.withValues(alpha: 0.6),
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // View All Button
-            if (stationsAsync.value?.isNotEmpty ?? false)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                color: RFMTheme.surfaceContainerLow,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'VIEW ALL STATIONS',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.arrow_forward, size: 18),
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 120),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-    bool clearable = false,
-    VoidCallback? onClear,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: BoxDecoration(
-        color: RFMTheme.surfaceContainerLowest.withOpacity(0.3),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white24,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                    ),
-              ),
-              if (clearable && value != null && onClear != null)
-                GestureDetector(
-                  onTap: onClear,
-                  child: const Text(
-                    'CLEAR',
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      color: RFMTheme.primaryContainer,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              dropdownColor: RFMTheme.surfaceContainerHigh,
-              icon: const Icon(Icons.unfold_more_rounded, color: Colors.white24, size: 20),
-              hint: Text(
-                'SELECT',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.white.withOpacity(0.6),
-                    ),
-              ),
-              items: items.map((item) {
-                return DropdownMenuItem(
-                  value: item,
-                  child: Text(
-                    item.toUpperCase(),
-                    style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                  ),
-                );
-              }).toList(),
-              onChanged: onChanged,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showStatePicker(BuildContext context, WidgetRef ref) {
+    final statesAsync = ref.read(statesProvider);
+    statesAsync.whenData((states) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF121212),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (context) => _PickerList(
+          title: 'Select State',
+          items: states,
+          onSelected: (val) {
+            ref.read(searchUIProvider.notifier).state = ref.read(searchUIProvider).copyWith(
+                  selectedState: val,
+                  selectedCity: null, // Reset city when state changes
+                );
+            Navigator.pop(context);
+          },
+          onClear: () {
+            ref.read(searchUIProvider.notifier).state = ref.read(searchUIProvider).copyWith(
+                  selectedState: null,
+                  selectedCity: null,
+                );
+            Navigator.pop(context);
+          },
+        ),
+      );
+    });
+  }
+
+  void _showCityPicker(BuildContext context, WidgetRef ref, String state) {
+    final citiesAsync = ref.read(citiesForStateProvider(state));
+    citiesAsync.whenData((cities) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF121212),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (context) => _PickerList(
+          title: 'Select City',
+          items: cities,
+          onSelected: (val) {
+            ref.read(searchUIProvider.notifier).state = ref.read(searchUIProvider).copyWith(selectedCity: val);
+            Navigator.pop(context);
+          },
+          onClear: () {
+            ref.read(searchUIProvider.notifier).state = ref.read(searchUIProvider).copyWith(selectedCity: null);
+            Navigator.pop(context);
+          },
+        ),
+      );
+    });
+  }
+
+  void _showLanguagePicker(BuildContext context, WidgetRef ref) {
+    final languagesAsync = ref.read(languagesProvider);
+    languagesAsync.whenData((langs) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF121212),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (context) => _PickerList(
+          title: 'Select Language',
+          items: langs,
+          onSelected: (val) {
+            ref.read(searchUIProvider.notifier).state = ref.read(searchUIProvider).copyWith(selectedLanguage: val);
+            Navigator.pop(context);
+          },
+          onClear: () {
+            ref.read(searchUIProvider.notifier).state = ref.read(searchUIProvider).copyWith(selectedLanguage: null);
+            Navigator.pop(context);
+          },
+        ),
+      );
+    });
+  }
+}
+
+class _FilterButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterButton({required this.label, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      onPressed: onTap,
+      label: Text(label),
+      backgroundColor: isSelected ? Colors.white : Colors.white10,
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.black : Colors.white70,
+        fontSize: 12,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      side: BorderSide.none,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+    );
+  }
+}
+
+class _PickerList extends StatelessWidget {
+  final String title;
+  final List<String> items;
+  final Function(String) onSelected;
+  final VoidCallback onClear;
+
+  const _PickerList({required this.title, required this.items, required this.onSelected, required this.onClear});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextButton(onPressed: onClear, child: const Text('CLEAR', style: TextStyle(color: RFMTheme.primary))),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) => ListTile(
+              title: Text(items[index]),
+              onTap: () => onSelected(items[index]),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
