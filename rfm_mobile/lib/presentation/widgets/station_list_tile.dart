@@ -6,12 +6,18 @@ class StationListTile extends StatefulWidget {
   final Station station;
   final bool isActive;
   final VoidCallback onTap;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
+  final VoidCallback? onLongPress;
 
   const StationListTile({
     super.key,
     required this.station,
     required this.isActive,
     required this.onTap,
+    this.isFavorite = false,
+    this.onFavoriteTap,
+    this.onLongPress,
   });
 
   @override
@@ -40,6 +46,7 @@ class _StationListTileState extends State<StationListTile> with SingleTickerProv
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: AnimatedScale(
         scale: widget.isActive ? 1.02 : 1.0,
         duration: const Duration(milliseconds: 300),
@@ -127,7 +134,7 @@ class _StationListTileState extends State<StationListTile> with SingleTickerProv
                         if (widget.station.city != null && widget.station.city!.isNotEmpty)
                           const SizedBox(width: 8),
                         if (widget.station.frequency != null && widget.station.frequency!.isNotEmpty)
-                          _buildTechPill(context, widget.station.frequency!.toUpperCase()),
+                          _buildTechPill(context, 'FM ${widget.station.frequency!.toUpperCase()}'),
                       ],
                     ),
                   ],
@@ -135,11 +142,21 @@ class _StationListTileState extends State<StationListTile> with SingleTickerProv
               ),
               
               const SizedBox(width: 12),
-              
-              // Pulsing Signal Icon
+
+              // Right controls: favorite + signal
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  if (widget.onFavoriteTap != null)
+                    GestureDetector(
+                      onTap: widget.onFavoriteTap,
+                      child: Icon(
+                        widget.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        size: 18,
+                        color: widget.isFavorite ? RFMTheme.primaryContainer : Colors.white24,
+                      ),
+                    ),
+                  if (widget.onFavoriteTap != null) const SizedBox(height: 8),
                   FadeTransition(
                     opacity: widget.isActive ? _pulseController : const AlwaysStoppedAnimation(0.2),
                     child: Icon(

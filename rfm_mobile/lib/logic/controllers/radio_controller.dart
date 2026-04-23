@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/station.dart';
 import '../../data/repositories/persistence_service.dart';
 import '../../main.dart'; // To access radioHandler
+import '../audio/radio_handler.dart';
 
 class RadioState {
   final Station? currentStation;
   final bool isPlaying;
   final bool isBuffering;
   final double volume;
-  final List<Station> stations;
+  final List<Station> queue;
+  final int queueIndex;
   final String visualizerStyle;
 
   RadioState({
@@ -18,16 +20,21 @@ class RadioState {
     this.isPlaying = false,
     this.isBuffering = false,
     this.volume = 1.0,
-    this.stations = const [],
+    this.queue = const [],
+    this.queueIndex = -1,
     this.visualizerStyle = 'classic',
   });
+
+  bool get hasPrevious => queueIndex > 0;
+  bool get hasNext => queue.isNotEmpty && queueIndex < queue.length - 1;
 
   RadioState copyWith({
     Station? currentStation,
     bool? isPlaying,
     bool? isBuffering,
     double? volume,
-    List<Station>? stations,
+    List<Station>? queue,
+    int? queueIndex,
     String? visualizerStyle,
   }) {
     return RadioState(
@@ -35,7 +42,8 @@ class RadioState {
       isPlaying: isPlaying ?? this.isPlaying,
       isBuffering: isBuffering ?? this.isBuffering,
       volume: volume ?? this.volume,
-      stations: stations ?? this.stations,
+      queue: queue ?? this.queue,
+      queueIndex: queueIndex ?? this.queueIndex,
       visualizerStyle: visualizerStyle ?? this.visualizerStyle,
     );
   }
@@ -49,18 +57,21 @@ class RadioController extends StateNotifier<RadioState> {
   }
 
   Future<void> _init() async {
-    // Restore state
     final savedStation = await _persistence.getStation();
     final savedVolume = await _persistence.getVolume();
     final savedStyle = await _persistence.getVisualizerStyle();
-    
+
     state = state.copyWith(
       currentStation: savedStation,
       volume: savedVolume,
       visualizerStyle: savedStyle,
     );
 
-    // Listen to audio handler changes
+    // Wire lock screen skip buttons → controller
+    final handler = radioHandler as RadioHandler;
+    handler.onSkipNext = () => skipToNext();
+    handler.onSkipPrevious = () => skipToPrevious();
+
     radioHandler.mediaItem.listen((item) {
       if (item != null && item.extras != null) {
         final station = Station.fromJson(item.extras!);
@@ -79,8 +90,26 @@ class RadioController extends StateNotifier<RadioState> {
     });
   }
 
-  Future<void> setStation(Station station) async {
+  Future<void> setStation(Station station, {List<Station>? queue}) async {
+    if (queue != null && queue.isNotEmpty) {
+      final index = queue.indexWhere((s) => s.changeuuid == station.changeuuid);
+      state = state.copyWith(queue: queue, queueIndex: index >= 0 ? index : 0);
+    }
     await radioHandler.playFromMediaId(station.changeuuid, station.toJson());
+  }
+
+  Future<void> skipToNext() async {
+    if (!state.hasNext) return;
+    final next = state.queue[state.queueIndex + 1];
+    state = state.copyWith(queueIndex: state.queueIndex + 1);
+    await radioHandler.playFromMediaId(next.changeuuid, next.toJson());
+  }
+
+  Future<void> skipToPrevious() async {
+    if (!state.hasPrevious) return;
+    final prev = state.queue[state.queueIndex - 1];
+    state = state.copyWith(queueIndex: state.queueIndex - 1);
+    await radioHandler.playFromMediaId(prev.changeuuid, prev.toJson());
   }
 
   Future<void> togglePlay() async {
@@ -89,6 +118,10 @@ class RadioController extends StateNotifier<RadioState> {
     } else {
       await radioHandler.play();
     }
+  }
+
+  Future<void> pause() async {
+    await radioHandler.pause();
   }
 
   Future<void> setVolume(double volume) async {

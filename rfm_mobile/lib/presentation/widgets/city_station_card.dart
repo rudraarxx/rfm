@@ -6,12 +6,18 @@ class CityStationCard extends StatefulWidget {
   final Station station;
   final bool isActive;
   final VoidCallback onTap;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
+  final VoidCallback? onLongPress;
 
   const CityStationCard({
     super.key,
     required this.station,
     required this.isActive,
     required this.onTap,
+    this.isFavorite = false,
+    this.onFavoriteTap,
+    this.onLongPress,
   });
 
   @override
@@ -47,6 +53,7 @@ class _CityStationCardState extends State<CityStationCard> with TickerProviderSt
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 400),
         width: 300,
@@ -134,6 +141,25 @@ class _CityStationCardState extends State<CityStationCard> with TickerProviderSt
                         },
                       ),
                     
+                    // Favorite (Top-Right)
+                    if (widget.onFavoriteTap != null)
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: widget.onFavoriteTap,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            color: Colors.black45,
+                            child: Icon(
+                              widget.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              size: 16,
+                              color: widget.isFavorite ? RFMTheme.primaryContainer : Colors.white54,
+                            ),
+                          ),
+                        ),
+                      ),
+
                     // Frequency Tag (Bottom-Left)
                     if (widget.station.frequency != null && widget.station.frequency!.isNotEmpty)
                       Positioned(

@@ -1,9 +1,13 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../data/models/station.dart';
 
 class RadioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
+
+  VoidCallback? onSkipNext;
+  VoidCallback? onSkipPrevious;
 
   RadioHandler() {
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
@@ -20,13 +24,12 @@ class RadioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToNext() async {
-    // This logic should ideally be triggered from the controller
-    // but we can add a broadcast signal or simpler logic here.
+    onSkipNext?.call();
   }
 
   @override
   Future<void> skipToPrevious() async {
-    // Same for prev
+    onSkipPrevious?.call();
   }
 
   @override
@@ -51,7 +54,7 @@ class RadioHandler extends BaseAudioHandler with SeekHandler {
       );
       play();
     } catch (e) {
-      print("Error loading audio source: $e");
+      debugPrint("Error loading audio source: $e");
     }
   }
 

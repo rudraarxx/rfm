@@ -51,13 +51,18 @@ class PlayerScreen extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(LucideIcons.settings, size: 20),
                         onPressed: () {
-                          // ... settings logic
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) => const SettingsPanel(),
+                          );
                         },
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 64),
+                  const SizedBox(height: 24),
 
                   // Large Artwork - Sharp Edges
                   Center(
@@ -85,7 +90,7 @@ class PlayerScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24),
 
                   // Metadata - Technical Authority
                   Text(
@@ -116,37 +121,79 @@ class PlayerScreen extends ConsumerWidget {
                         width: MediaQuery.of(context).size.width,
                         height: 160,
                       ),
-                      GestureDetector(
-                        onTap: radioState.isBuffering
-                            ? null
-                            : () {
-                                HapticFeedback.mediumImpact();
-                                ref.read(radioControllerProvider.notifier).togglePlay();
-                              },
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            gradient: RFMTheme.primaryGradient,
-                            shape: BoxShape.rectangle,
-                          ),
-                          child: radioState.isBuffering
-                              ? const Center(
-                                  child: SizedBox(
-                                    width: 32,
-                                    height: 32,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 3,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Prev
+                          if (radioState.queue.length > 1)
+                            IconButton(
+                              onPressed: radioState.hasPrevious
+                                  ? () {
+                                      HapticFeedback.lightImpact();
+                                      ref.read(radioControllerProvider.notifier).skipToPrevious();
+                                    }
+                                  : null,
+                              icon: Icon(
+                                LucideIcons.skipBack,
+                                size: 28,
+                                color: radioState.hasPrevious
+                                    ? Colors.white
+                                    : Colors.white24,
+                              ),
+                            ),
+                          if (radioState.queue.length > 1) const SizedBox(width: 16),
+                          // Play/Pause
+                          GestureDetector(
+                            onTap: radioState.isBuffering
+                                ? null
+                                : () {
+                                    HapticFeedback.mediumImpact();
+                                    ref.read(radioControllerProvider.notifier).togglePlay();
+                                  },
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: const BoxDecoration(
+                                gradient: RFMTheme.primaryGradient,
+                                shape: BoxShape.rectangle,
+                              ),
+                              child: radioState.isBuffering
+                                  ? const Center(
+                                      child: SizedBox(
+                                        width: 32,
+                                        height: 32,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
                                       color: Colors.white,
+                                      size: 32,
                                     ),
-                                  ),
-                                )
-                              : Icon(
-                                  radioState.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                        ),
+                            ),
+                          ),
+                          if (radioState.queue.length > 1) const SizedBox(width: 16),
+                          // Next
+                          if (radioState.queue.length > 1)
+                            IconButton(
+                              onPressed: radioState.hasNext
+                                  ? () {
+                                      HapticFeedback.lightImpact();
+                                      ref.read(radioControllerProvider.notifier).skipToNext();
+                                    }
+                                  : null,
+                              icon: Icon(
+                                LucideIcons.skipForward,
+                                size: 28,
+                                color: radioState.hasNext
+                                    ? Colors.white
+                                    : Colors.white24,
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),
@@ -176,7 +223,7 @@ class PlayerScreen extends ConsumerWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

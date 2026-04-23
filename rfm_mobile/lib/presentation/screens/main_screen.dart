@@ -7,6 +7,7 @@ import 'search_screen.dart';
 import 'player_screen.dart';
 import '../widgets/mini_player.dart';
 import '../../logic/controllers/radio_controller.dart';
+import '../../logic/providers/history_provider.dart';
 
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -17,6 +18,13 @@ class MainScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navigationIndexProvider);
     final radioState = ref.watch(radioControllerProvider);
+
+    ref.listen<RadioState>(radioControllerProvider, (previous, next) {
+      if (next.currentStation != null &&
+          next.currentStation?.changeuuid != previous?.currentStation?.changeuuid) {
+        ref.read(historyProvider.notifier).add(next.currentStation!);
+      }
+    });
 
     final List<Widget> screens = [
       const DashboardScreen(),

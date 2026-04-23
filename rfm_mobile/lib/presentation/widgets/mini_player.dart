@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../logic/controllers/radio_controller.dart';
+import '../../logic/providers/sleep_timer_provider.dart';
 import '../screens/player_screen.dart';
 import 'glass_container.dart';
 
@@ -12,6 +13,7 @@ class MiniPlayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final radioState = ref.watch(radioControllerProvider);
+    final sleepTimer = ref.watch(sleepTimerProvider);
     final station = radioState.currentStation;
 
     if (station == null) return const SizedBox.shrink();
@@ -107,6 +109,28 @@ class MiniPlayer extends ConsumerWidget {
                 ],
               ),
             ),
+
+            // Sleep timer badge
+            if (sleepTimer != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.timer_outlined, size: 12, color: Color(0xFFD4AF37)),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${sleepTimer.inMinutes}:${(sleepTimer.inSeconds % 60).toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFFD4AF37),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             // Controls
             radioState.isBuffering

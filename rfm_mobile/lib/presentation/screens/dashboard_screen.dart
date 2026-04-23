@@ -10,6 +10,9 @@ import '../widgets/city_station_card.dart';
 import '../widgets/station_list_tile.dart';
 import '../widgets/mini_player.dart';
 import '../../logic/providers/location_provider.dart';
+import '../../logic/providers/favorites_provider.dart';
+import '../../logic/providers/history_provider.dart';
+import '../widgets/station_detail_sheet.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -51,6 +54,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final stationsAsync = ref.watch(stationsProvider);
     final radioState = ref.watch(radioControllerProvider);
     final locationState = ref.watch(locationProvider);
+    final favorites = ref.watch(favoritesProvider);
+    final history = ref.watch(historyProvider);
+
+    ref.listen<LocationState>(locationProvider, (previous, next) {
+      if (next.error != null && next.error != previous?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Location unavailable. Showing ${next.city}.'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: RFMTheme.surface,
@@ -113,7 +129,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       return HeroStationCard(
                         station: currentStation,
                         isPlaying: radioState.isPlaying,
-                        onPlayTap: () => ref.read(radioControllerProvider.notifier).setStation(currentStation),
+                        onPlayTap: () => ref.read(radioControllerProvider.notifier).setStation(currentStation, queue: stations),
                       );
                     },
                     loading: () => const SizedBox(height: 380, child: Center(child: CircularProgressIndicator())),
@@ -123,6 +139,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                 // Editorial Spacer
                 const SliverToBoxAdapter(child: SizedBox(height: 48)),
+
+                // Recent Transmissions Section
+                if (history.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SectionHeader(
+                          title: 'Recent\nTransmissions',
+                          subtitle: 'Last played',
+                        ),
+                        SizedBox(
+                          height: 360,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: history.length,
+                            padding: const EdgeInsets.only(right: 24),
+                            itemBuilder: (context, index) {
+                              final station = history[index];
+                              return CityStationCard(
+                                station: station,
+                                isActive: radioState.currentStation?.changeuuid == station.changeuuid,
+                                onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: history),
+                                isFavorite: favorites.contains(station.changeuuid),
+                                onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
+                                onLongPress: () => showStationDetail(context, station),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 48),
+                      ],
+                    ),
+                  ),
 
                 // 2. In Your City Section (Horizontal Rail)
                 SliverToBoxAdapter(
@@ -151,7 +202,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 return CityStationCard(
                                   station: station,
                                   isActive: radioState.currentStation?.changeuuid == station.changeuuid,
-                                  onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
+                                  onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: cityStations),
+                                  isFavorite: favorites.contains(station.changeuuid),
+                                  onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
+                                  onLongPress: () => showStationDetail(context, station),
                                 );
                               },
                             ),
@@ -180,12 +234,82 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       );
                     },
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, __) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'LOCAL SIGNAL LOST',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: RFMTheme.primaryContainer,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          GestureDetector(
+                            onTap: () => ref.refresh(cityStationsProvider),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              color: RFMTheme.surfaceContainerHigh,
+                              child: Text(
+                                'RETRY',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: RFMTheme.onSurface.withValues(alpha: 0.6),
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
 
                 // Editorial Spacer
                 const SliverToBoxAdapter(child: SizedBox(height: 48)),
+
+                // Saved Frequencies Section
+                if (favorites.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SectionHeader(
+                          title: 'Saved\nFrequencies',
+                          subtitle: 'Your stations',
+                        ),
+                        stationsAsync.when(
+                          data: (stations) {
+                            final saved = stations.where((s) => favorites.contains(s.changeuuid)).toList();
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: saved.length,
+                              itemBuilder: (context, index) {
+                                final station = saved[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: StationListTile(
+                                    station: station,
+                                    isActive: radioState.currentStation?.changeuuid == station.changeuuid,
+                                    onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: saved),
+                                    isFavorite: true,
+                                    onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
+                                    onLongPress: () => showStationDetail(context, station),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (err, st) => const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: 48),
+                      ],
+                    ),
+                  ),
 
                 // 3. All India Radios (2+1 Staggered Layout)
                 const SliverToBoxAdapter(
@@ -207,7 +331,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             child: StationListTile(
                               station: station,
                               isActive: radioState.currentStation?.changeuuid == station.changeuuid,
-                              onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
+                              onTap: () => ref.read(radioControllerProvider.notifier).setStation(station, queue: stations),
+                              isFavorite: favorites.contains(station.changeuuid),
+                              onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
+                              onLongPress: () => showStationDetail(context, station),
                             ),
                           );
                         },
@@ -218,8 +345,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   loading: () => const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (err, _) => SliverFillRemaining(
-                    child: Center(child: Text('Error: $err')),
+                  error: (err, st) => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'NATIONAL SIGNAL LOST',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: RFMTheme.primaryContainer,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          GestureDetector(
+                            onTap: () => ref.refresh(stationsProvider),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              color: RFMTheme.surfaceContainerHigh,
+                              child: Text(
+                                'RETRY',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: RFMTheme.onSurface.withValues(alpha: 0.6),
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
 

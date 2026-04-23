@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/rfm_theme.dart';
+import '../../data/models/station.dart';
 import '../../data/repositories/station_repository.dart';
+import '../../logic/providers/favorites_provider.dart';
+import '../widgets/station_detail_sheet.dart';
 import '../../logic/controllers/radio_controller.dart';
 import '../widgets/station_list_tile.dart';
 
@@ -12,18 +15,30 @@ class SearchUIState {
   final String query;
   final String? selectedState;
   final String? selectedCity;
+  final String? selectedLanguage;
+  final String? selectedTag;
 
-  const SearchUIState({this.query = '', this.selectedState, this.selectedCity});
+  const SearchUIState({
+    this.query = '',
+    this.selectedState,
+    this.selectedCity,
+    this.selectedLanguage,
+    this.selectedTag,
+  });
 
   SearchUIState copyWith({
     String? query,
-    String? selectedState,
+    Object? selectedState = _sentinel,
     Object? selectedCity = _sentinel,
+    Object? selectedLanguage = _sentinel,
+    Object? selectedTag = _sentinel,
   }) {
     return SearchUIState(
       query: query ?? this.query,
-      selectedState: selectedState ?? this.selectedState,
+      selectedState: selectedState == _sentinel ? this.selectedState : selectedState as String?,
       selectedCity: selectedCity == _sentinel ? this.selectedCity : selectedCity as String?,
+      selectedLanguage: selectedLanguage == _sentinel ? this.selectedLanguage : selectedLanguage as String?,
+      selectedTag: selectedTag == _sentinel ? this.selectedTag : selectedTag as String?,
     );
   }
 }
@@ -46,21 +61,69 @@ final citiesForStateProvider = FutureProvider.family<List<String>, String>((ref,
   return ref.read(stationRepositoryProvider).getCitiesForState(state);
 });
 
+/// Unique languages derived from all stations.
+final languagesProvider = FutureProvider<List<String>>((ref) async {
+  final stations = await ref.watch(stationsProvider.future);
+  final langs = stations
+      .map((s) => s.language?.trim())
+      .whereType<String>()
+      .where((l) => l.isNotEmpty)
+      .toSet()
+      .toList()
+    ..sort();
+  return langs;
+});
+
+/// Unique tags derived from all stations (top 20 by frequency).
+final tagsProvider = FutureProvider<List<String>>((ref) async {
+  final stations = await ref.watch(stationsProvider.future);
+  final freq = <String, int>{};
+  for (final s in stations) {
+    if (s.tags == null) continue;
+    for (final tag in s.tags!.split(',')) {
+      final t = tag.trim().toLowerCase();
+      if (t.isNotEmpty) freq[t] = (freq[t] ?? 0) + 1;
+    }
+  }
+  final sorted = freq.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+  return sorted.take(20).map((e) => e.key).toList();
+});
+
 /// Fetches stations based on the current search UI state.
-/// Only fires when query OR selectedCity is set.
-final filteredStationsProvider = FutureProvider<List<dynamic>>((ref) async {
+final filteredStationsProvider = FutureProvider<List<Station>>((ref) async {
   final searchState = ref.watch(searchUIProvider);
   final repository = ref.read(stationRepositoryProvider);
 
-  if (searchState.query.isNotEmpty) {
-    return repository.searchStations(searchState.query);
-  } else if (searchState.selectedCity != null && searchState.selectedState != null) {
-    return repository.getStationsByLocation(
+  final bool hasTextFilter = searchState.query.isNotEmpty;
+  final bool hasLocationFilter = searchState.selectedCity != null && searchState.selectedState != null;
+  final bool hasExtraFilter = searchState.selectedLanguage != null || searchState.selectedTag != null;
+
+  if (!hasTextFilter && !hasLocationFilter && !hasExtraFilter) return [];
+
+  List<Station> results;
+  if (hasTextFilter) {
+    results = await repository.searchStations(searchState.query);
+  } else if (hasLocationFilter) {
+    results = await repository.getStationsByLocation(
       state: searchState.selectedState!,
       city: searchState.selectedCity,
     );
+  } else {
+    results = await repository.getStations();
   }
-  return [];
+
+  if (searchState.selectedLanguage != null) {
+    results = results
+        .where((s) => s.language?.toLowerCase().contains(searchState.selectedLanguage!.toLowerCase()) ?? false)
+        .toList();
+  }
+  if (searchState.selectedTag != null) {
+    results = results
+        .where((s) => s.tags?.toLowerCase().contains(searchState.selectedTag!.toLowerCase()) ?? false)
+        .toList();
+  }
+
+  return results;
 });
 
 // ── Screen ───────────────────────────────────────────────────────────────────
@@ -85,8 +148,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchUIProvider);
     final stationsAsync = ref.watch(filteredStationsProvider);
-    // Watch the stable top-level provider — NOT an inline one
     final statesAsync = ref.watch(statesProvider);
+    final languagesAsync = ref.watch(languagesProvider);
+    final tagsAsync = ref.watch(tagsProvider);
+    final favorites = ref.watch(favoritesProvider);
 
     return Scaffold(
       backgroundColor: RFMTheme.surface,
@@ -214,7 +279,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             // City Dropdown — only shown when a state is selected
             if (searchState.selectedState != null)
               Builder(builder: (context) {
-                // Uses the stable family provider — cached per state name
                 final citiesAsync = ref.watch(
                   citiesForStateProvider(searchState.selectedState!),
                 );
@@ -230,10 +294,87 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 );
               }),
 
+            // Language Dropdown
+            if (languagesAsync.value?.isNotEmpty ?? false)
+              _buildDropdown(
+                label: 'SELECT LANGUAGE',
+                value: searchState.selectedLanguage,
+                items: languagesAsync.value!,
+                onChanged: (val) {
+                  ref.read(searchUIProvider.notifier).state =
+                      searchState.copyWith(selectedLanguage: val);
+                },
+                clearable: true,
+                onClear: () => ref.read(searchUIProvider.notifier).state =
+                    searchState.copyWith(selectedLanguage: null),
+              ),
+
+            // Tag Chips
+            if (tagsAsync.value?.isNotEmpty ?? false) ...[
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'FILTER BY GENRE',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Colors.white24,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: tagsAsync.value!.map((tag) {
+                        final isSelected = searchState.selectedTag == tag;
+                        return GestureDetector(
+                          onTap: () {
+                            ref.read(searchUIProvider.notifier).state =
+                                searchState.copyWith(
+                              selectedTag: isSelected ? null : tag,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? RFMTheme.primaryContainer.withValues(alpha: 0.15)
+                                  : RFMTheme.surfaceContainerLowest,
+                              border: Border.all(
+                                color: isSelected
+                                    ? RFMTheme.primaryContainer.withValues(alpha: 0.5)
+                                    : Colors.white10,
+                              ),
+                            ),
+                            child: Text(
+                              tag.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                                color: isSelected ? RFMTheme.primaryContainer : Colors.white38,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 48),
 
             // ── Results Header ───────────────────────────────────────────────
-            if (searchState.selectedCity != null || searchState.query.isNotEmpty)
+            if (searchState.selectedCity != null ||
+                searchState.query.isNotEmpty ||
+                searchState.selectedLanguage != null ||
+                searchState.selectedTag != null)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -302,8 +443,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               .currentStation
                               ?.changeuuid ==
                           station.changeuuid,
-                      onTap: () =>
-                          ref.read(radioControllerProvider.notifier).setStation(station),
+                      onTap: () => ref.read(radioControllerProvider.notifier).setStation(
+                            station,
+                            queue: List<Station>.from(stations),
+                          ),
+                      isFavorite: favorites.contains(station.changeuuid),
+                      onFavoriteTap: () => ref.read(favoritesProvider.notifier).toggle(station.changeuuid),
+                      onLongPress: () => showStationDetail(context, station),
                     );
                   },
                 );
@@ -312,16 +458,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 padding: EdgeInsets.symmetric(vertical: 48),
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (err, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 48),
-                  child: Text(
-                    'CONNECTION ERROR',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.white24,
-                          fontWeight: FontWeight.w900,
+              error: (err, st) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SIGNAL LOST',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: RFMTheme.primaryContainer,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () => ref.refresh(filteredStationsProvider),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        color: RFMTheme.surfaceContainerHigh,
+                        child: Text(
+                          'RETRY',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: RFMTheme.onSurface.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -363,6 +527,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    bool clearable = false,
+    VoidCallback? onClear,
   }) {
     return Container(
       width: double.infinity,
@@ -374,13 +540,31 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Colors.white24,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white24,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+              if (clearable && value != null && onClear != null)
+                GestureDetector(
+                  onTap: onClear,
+                  child: const Text(
+                    'CLEAR',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: RFMTheme.primaryContainer,
+                      letterSpacing: 1,
+                    ),
+                  ),
                 ),
+            ],
           ),
           const SizedBox(height: 8),
           DropdownButtonHideUnderline(

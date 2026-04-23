@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../logic/controllers/radio_controller.dart';
+import '../../logic/providers/sleep_timer_provider.dart';
 import 'glass_container.dart';
 
 class SettingsPanel extends ConsumerWidget {
@@ -11,6 +12,8 @@ class SettingsPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final radioState = ref.watch(radioControllerProvider);
     final notifier = ref.read(radioControllerProvider.notifier);
+    final sleepTimer = ref.watch(sleepTimerProvider);
+    final sleepNotifier = ref.read(sleepTimerProvider.notifier);
 
     return GlassContainer(
       borderRadius: 40,
@@ -63,7 +66,56 @@ class SettingsPanel extends ConsumerWidget {
           ),
           
           const SizedBox(height: 30),
-          
+
+          // Sleep Timer
+          const Text(
+            'Sleep Timer',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _TimerButton(
+                label: 'Off',
+                isActive: sleepTimer == null,
+                onTap: () => sleepNotifier.cancel(),
+              ),
+              const SizedBox(width: 8),
+              _TimerButton(
+                label: '15m',
+                isActive: sleepTimer != null && sleepTimer.inMinutes == 15 && sleepTimer.inSeconds > 840,
+                onTap: () => sleepNotifier.set(const Duration(minutes: 15)),
+              ),
+              const SizedBox(width: 8),
+              _TimerButton(
+                label: '30m',
+                isActive: sleepTimer != null && sleepTimer.inMinutes == 30 && sleepTimer.inSeconds > 1740,
+                onTap: () => sleepNotifier.set(const Duration(minutes: 30)),
+              ),
+              const SizedBox(width: 8),
+              _TimerButton(
+                label: '60m',
+                isActive: sleepTimer != null && sleepTimer.inMinutes == 60 && sleepTimer.inSeconds > 3540,
+                onTap: () => sleepNotifier.set(const Duration(minutes: 60)),
+              ),
+            ],
+          ),
+          if (sleepTimer != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                'Pausing in ${sleepTimer.inMinutes}:${(sleepTimer.inSeconds % 60).toString().padLeft(2, '0')}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 30),
+
           // Audio Info (Static)
           const GlassContainer(
             borderRadius: 20,
@@ -125,6 +177,48 @@ class _StyleButton extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 13,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                color: isActive ? const Color(0xFFD4AF37) : Colors.white60,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TimerButton extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _TimerButton({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFD4AF37).withOpacity(0.15) : Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive ? const Color(0xFFD4AF37).withOpacity(0.5) : Colors.white10,
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                 color: isActive ? const Color(0xFFD4AF37) : Colors.white60,
               ),
