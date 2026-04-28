@@ -50,7 +50,7 @@ class PlayerScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(LucideIcons.chevronDown, size: 32),
+                        icon: Icon(LucideIcons.chevronDown, size: 32),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Container(
@@ -78,7 +78,7 @@ class PlayerScreen extends ConsumerWidget {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(LucideIcons.settings, size: 24),
+                        icon: Icon(LucideIcons.settings, size: 24),
                         onPressed: () {
                           showModalBottomSheet(
                             context: context,
@@ -225,14 +225,14 @@ class PlayerScreen extends ConsumerWidget {
                                           color: Colors.red,
                                           shape: BoxShape.circle,
                                         ),
-                                      ).animate(onPlay: (c) => c.repeat()).pulse(duration: 1.seconds),
+                                      ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1.seconds),
                                       const SizedBox(width: 8),
                                       Text(
                                         '${recState.duration.inMinutes}:${(recState.duration.inSeconds % 60).toString().padLeft(2, '0')}',
                                         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red),
                                       ),
                                     ] else 
-                                      const Icon(LucideIcons.mic, size: 14, color: Colors.white38),
+                                      Icon(LucideIcons.mic, size: 14, color: Colors.white38),
                                   ],
                                 ),
                               ),
@@ -249,7 +249,7 @@ class PlayerScreen extends ConsumerWidget {
                   // Volume
                   Row(
                     children: [
-                      const Icon(LucideIcons.volume1, size: 18, color: Colors.white38),
+                      Icon(LucideIcons.volume1, size: 18, color: Colors.white38),
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
@@ -265,7 +265,7 @@ class PlayerScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const Icon(LucideIcons.volume2, size: 18, color: Colors.white38),
+                      Icon(LucideIcons.volume2, size: 18, color: Colors.white38),
                     ],
                   ),
 

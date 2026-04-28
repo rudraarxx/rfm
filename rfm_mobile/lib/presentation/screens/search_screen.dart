@@ -85,7 +85,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search stations, cities, or genres...',
                   hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 14),
-                  prefixIcon: const Icon(LucideIcons.search, color: RFMTheme.primary, size: 20),
+                  prefixIcon: Icon(LucideIcons.search, color: RFMTheme.primary, size: 20),
                   suffixIcon: _isLoading 
                     ? const Padding(
                         padding: EdgeInsets.all(12.0),

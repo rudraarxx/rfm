@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/config/env.dart';
-import '../models/station.dart';
+import '../../data/models/station.dart';
 import 'favorites_controller.dart';
 
 final syncControllerProvider = StateNotifierProvider<SyncController, SyncState>((ref) {

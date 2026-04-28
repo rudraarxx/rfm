@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../models/station.dart';
+import '../../data/models/station.dart';
 import '../../logic/controllers/radio_controller.dart';
 
 final recordingControllerProvider = StateNotifierProvider<RecordingController, RecordingState>((ref) {

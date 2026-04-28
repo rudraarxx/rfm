@@ -35,7 +35,7 @@ class SettingsPanel extends ConsumerWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(LucideIcons.x, size: 20),
+                icon: Icon(LucideIcons.x, size: 20),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -209,7 +209,7 @@ class SettingsPanel extends ConsumerWidget {
                     style: const TextStyle(fontSize: 13, color: Colors.white),
                     decoration: InputDecoration(
                       hintText: syncState.syncId ?? 'Enter Sync Code...',
-                      prefixIcon: const Icon(LucideIcons.cloud, size: 18, color: Color(0xFFD4AF37)),
+                      prefixIcon: Icon(LucideIcons.cloud, size: 18, color: Color(0xFFD4AF37)),
                       suffixIcon: syncState.isSyncing 
                         ? const Padding(
                             padding: EdgeInsets.all(12),
@@ -225,7 +225,7 @@ class SettingsPanel extends ConsumerWidget {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => syncNotifier.push(),
-                            icon: const Icon(LucideIcons.uploadCloud, size: 14),
+                            icon: Icon(LucideIcons.uploadCloud, size: 14),
                             label: const Text('PUSH'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white.withOpacity(0.05),
@@ -237,7 +237,7 @@ class SettingsPanel extends ConsumerWidget {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => syncNotifier.pull(),
-                            icon: const Icon(LucideIcons.downloadCloud, size: 14),
+                            icon: Icon(LucideIcons.downloadCloud, size: 14),
                             label: const Text('PULL'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white.withOpacity(0.05),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import '../../data/repositories/station_repository.dart';
+import '../../data/models/station.dart';
 import '../../data/services/station_api.dart';
 import '../../logic/controllers/radio_controller.dart';
 import '../../logic/controllers/favorites_controller.dart';
@@ -12,7 +13,9 @@ import '../widgets/section_header.dart';
 import '../widgets/city_station_card.dart';
 import '../widgets/station_list_tile.dart';
 import '../widgets/mini_player.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'search_screen.dart';
+import 'player_screen.dart';
 
 final recommendedStationsProvider = FutureProvider<List<Station>>((ref) {
   final api = StationApi();
@@ -247,7 +250,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           ),
                                           child: Row(
                                             children: [
-                                              const Icon(LucideIcons.playCircle, color: Color(0xFFD4AF37), size: 32),
+                                              Icon(LucideIcons.playCircle, color: Color(0xFFD4AF37), size: 32),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
@@ -268,7 +271,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                                 ),
                                               ),
                                               IconButton(
-                                                icon: const Icon(LucideIcons.trash2, size: 14, color: Colors.white10),
+                                                icon: Icon(LucideIcons.trash2, size: 14, color: Colors.white10),
                                                 onPressed: () => ref.read(recordingControllerProvider.notifier).deleteTape(tape),
                                               ),
                                             ],
@@ -454,7 +457,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
 
                     // Player View (Index 1) - Reuses the PlayerScreen content
-                    const PlayerScreen(),
+                    PlayerScreen(),
 
                     // Search/Explore View (Index 2)
                     const SearchScreen(),
