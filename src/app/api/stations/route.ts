@@ -40,28 +40,44 @@ export async function GET(request: Request) {
     const state = searchParams.get('state')?.toLowerCase();
     const city = searchParams.get('city')?.toLowerCase();
     const search = searchParams.get('search')?.toLowerCase();
+    const recommend = searchParams.get('recommend') === 'true';
+    const limit = parseInt(searchParams.get('limit') || '200');
 
     // 2. Perform in-memory filtering
-    let filtered = stations;
+    let filtered = [...stations];
 
-    if (state) {
-      filtered = filtered.filter((s: any) => s.state?.toLowerCase().includes(state));
-    }
-    if (city) {
-      filtered = filtered.filter((s: any) => s.city?.toLowerCase().includes(city));
-    }
-    if (search) {
-      filtered = filtered.filter((s: any) => 
-        s.name?.toLowerCase().includes(search) || 
-        s.tags?.toLowerCase().includes(search)
-      );
+    if (recommend) {
+      // Discovery Logic: Mix of local and top global
+      const local = stations.filter((s: any) => 
+        (state && s.state?.toLowerCase().includes(state)) || 
+        (city && s.city?.toLowerCase().includes(city))
+      ).slice(0, 10);
+      
+      const topGlobal = stations
+        .sort((a: any, b: any) => (b.votes || 0) - (a.votes || 0))
+        .slice(0, 50);
+      
+      // Shuffle and pick
+      filtered = [...new Set([...local, ...topGlobal])].sort(() => Math.random() - 0.5);
+    } else {
+      if (state) {
+        filtered = filtered.filter((s: any) => s.state?.toLowerCase().includes(state));
+      }
+      if (city) {
+        filtered = filtered.filter((s: any) => s.city?.toLowerCase().includes(city));
+      }
+      if (search) {
+        filtered = filtered.filter((s: any) => 
+          s.name?.toLowerCase().includes(search) || 
+          s.tags?.toLowerCase().includes(search)
+        );
+      }
+      // Sort by votes descending
+      filtered.sort((a: any, b: any) => (b.votes || 0) - (a.votes || 0));
     }
 
-    // 3. Sort by votes descending (match original behavior)
-    filtered.sort((a: any, b: any) => (b.votes || 0) - (a.votes || 0));
-
-    // 4. Limit to 200
-    const result = filtered.slice(0, 200);
+    // 3. Limit result
+    const result = filtered.slice(0, limit);
 
     return NextResponse.json(
       { stations: result },

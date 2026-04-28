@@ -10,6 +10,7 @@ interface RadioState {
   stations: Station[];
   analyser: AnalyserNode | null;
   visualizerStyle: "classic" | "colorful" | "circular";
+  favorites: Station[];
   
   // Actions
   setStation: (station: Station) => void;
@@ -19,6 +20,7 @@ interface RadioState {
   setStations: (stations: Station[]) => void;
   setAnalyser: (analyser: AnalyserNode | null) => void;
   setVisualizerStyle: (style: "classic" | "colorful" | "circular") => void;
+  toggleFavorite: (station: Station) => void;
   nextStation: () => void;
   previousStation: () => void;
   initialize: () => Promise<void>;
@@ -34,6 +36,7 @@ export const useRadioStore = create<RadioState>()(
       stations: getAllStations(),
       analyser: null,
       visualizerStyle: "classic",
+      favorites: [],
 
       setStation: (station) => set({ currentStation: station, isPlaying: true }),
       togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
@@ -42,6 +45,14 @@ export const useRadioStore = create<RadioState>()(
       setStations: (stations) => set({ stations }),
       setAnalyser: (analyser) => set({ analyser }),
       setVisualizerStyle: (style) => set({ visualizerStyle: style }),
+      
+      toggleFavorite: (station) => set((state) => {
+        const isFav = state.favorites.some(s => s.changeuuid === station.changeuuid);
+        const newFavs = isFav 
+          ? state.favorites.filter(s => s.changeuuid !== station.changeuuid)
+          : [...state.favorites, station];
+        return { favorites: newFavs };
+      }),
       
       nextStation: () => set((state) => {
         if (state.stations.length === 0) return state;
@@ -93,7 +104,8 @@ export const useRadioStore = create<RadioState>()(
       partialize: (state) => ({ 
         currentStation: state.currentStation, 
         volume: state.volume,
-        visualizerStyle: state.visualizerStyle
+        visualizerStyle: state.visualizerStyle,
+        favorites: state.favorites
       }),
     }
   )

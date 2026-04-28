@@ -12,12 +12,16 @@ class StationApi {
     String? state,
     String? city,
     String? search,
+    bool? recommend,
+    int? limit,
     String? etag,
   }) async {
     final queryParams = <String, String>{};
     if (state != null && state.isNotEmpty) queryParams['state'] = state;
     if (city != null && city.isNotEmpty) queryParams['city'] = city;
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
+    if (recommend == true) queryParams['recommend'] = 'true';
+    if (limit != null) queryParams['limit'] = limit.toString();
 
     final headers = <String, String>{};
     if (etag != null) headers['If-None-Match'] = etag;

@@ -12,14 +12,19 @@ import '../widgets/station_list_tile.dart';
 import '../widgets/mini_player.dart';
 import 'search_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
+final recommendedStationsProvider = FutureProvider<List<Station>>((ref) {
+  final api = StationApi();
+  return api.getStations(recommend: true, limit: 15).then((data) => data['stations'] as List<Station>);
+});
+
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _currentIndex = 0;
 
   void _onTabTapped(int index) {
@@ -268,10 +273,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
 
+                        // 4. Discovery Mode (Recommendations)
+                        SliverToBoxAdapter(
+                          child: ref.watch(recommendedStationsProvider).when(
+                            data: (recommended) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SectionHeader(
+                                    title: 'Smart\nDiscovery',
+                                    subtitle: 'Recommended For You',
+                                  ),
+                                  SizedBox(
+                                    height: 340,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      physics: const BouncingScrollPhysics(),
+                                      itemCount: recommended.length,
+                                      padding: const EdgeInsets.only(right: 24),
+                                      itemBuilder: (context, index) {
+                                        final station = recommended[index];
+                                        return CityStationCard(
+                                          station: station,
+                                          isActive: radioState.currentStation?.changeuuid == station.changeuuid,
+                                          onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          ),
+                        ),
+
                         // Editorial Spacer
                         const SliverToBoxAdapter(child: SizedBox(height: 48)),
 
-                        // 3. All India Radios (2+1 Staggered Layout)
+                        // 5. All India Radios
                         SliverToBoxAdapter(
                           child: TweenAnimationBuilder<double>(
                             duration: const Duration(milliseconds: 1000),

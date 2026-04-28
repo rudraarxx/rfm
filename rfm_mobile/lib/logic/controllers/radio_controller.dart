@@ -10,6 +10,8 @@ class RadioState {
   final double volume;
   final List<Station> stations;
   final String visualizerStyle;
+  final int visualizerColor;
+  final double visualizerOpacity;
 
   RadioState({
     this.currentStation,
@@ -17,6 +19,8 @@ class RadioState {
     this.volume = 1.0,
     this.stations = const [],
     this.visualizerStyle = 'classic',
+    this.visualizerColor = 0xFFD4AF37, // Brass
+    this.visualizerOpacity = 1.0,
   });
 
   RadioState copyWith({
@@ -25,6 +29,8 @@ class RadioState {
     double? volume,
     List<Station>? stations,
     String? visualizerStyle,
+    int? visualizerColor,
+    double? visualizerOpacity,
   }) {
     return RadioState(
       currentStation: currentStation ?? this.currentStation,
@@ -32,6 +38,8 @@ class RadioState {
       volume: volume ?? this.volume,
       stations: stations ?? this.stations,
       visualizerStyle: visualizerStyle ?? this.visualizerStyle,
+      visualizerColor: visualizerColor ?? this.visualizerColor,
+      visualizerOpacity: visualizerOpacity ?? this.visualizerOpacity,
     );
   }
 }
@@ -101,6 +109,14 @@ class RadioController extends StateNotifier<RadioState> {
   Future<void> setVisualizerStyle(String style) async {
     state = state.copyWith(visualizerStyle: style);
     await _persistence.saveVisualizerStyle(style);
+  }
+
+  void setVisualizerColor(int color) {
+    state = state.copyWith(visualizerColor: color);
+  }
+
+  void setVisualizerOpacity(double opacity) {
+    state = state.copyWith(visualizerOpacity: opacity);
   }
 }
 

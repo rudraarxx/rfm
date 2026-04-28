@@ -133,6 +133,67 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           </div>
         </section>
 
+        {/* Cloud Sync - New Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-brass/60">
+            <Radio className="w-4 h-4" />
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.4em]">Cloud Sync</h3>
+          </div>
+          <div className="space-y-3 p-5 rounded-2xl bg-foreground/5 border border-foreground/5">
+             <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Enter Sync Code..."
+                  className="flex-1 bg-background/50 border border-brass/20 rounded-xl px-4 py-3 text-sm font-primary focus:outline-none focus:border-brass/50 transition-colors"
+                  id="syncCode"
+                  defaultValue={typeof window !== 'undefined' ? localStorage.getItem('rfm_sync_id') || '' : ''}
+                  onChange={(e) => {
+                    localStorage.setItem('rfm_sync_id', e.target.value);
+                  }}
+                />
+             </div>
+             <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={async () => {
+                    const id = (document.getElementById('syncCode') as HTMLInputElement).value;
+                    if (!id) return toast.error("Enter a sync code first");
+                    const { favorites } = useRadioStore.getState();
+                    const res = await fetch('/api/sync', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id, favorites })
+                    });
+                    if (res.ok) toast.success("Favorites Pushed to Cloud");
+                    else toast.error("Push failed");
+                  }}
+                  className="py-3 rounded-xl bg-brass/10 border border-brass/20 text-brass text-[10px] font-bold uppercase tracking-widest hover:bg-brass/20 transition-all"
+                >
+                  Push to Cloud
+                </button>
+                <button 
+                  onClick={async () => {
+                    const id = (document.getElementById('syncCode') as HTMLInputElement).value;
+                    if (!id) return toast.error("Enter a sync code first");
+                    const res = await fetch(`/api/sync?id=${id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      useRadioStore.setState({ favorites: data.favorites || [] });
+                      toast.success("Favorites Pulled from Cloud");
+                    } else {
+                      toast.error("Pull failed");
+                    }
+                  }}
+                  className="py-3 rounded-xl bg-brass/10 border border-brass/20 text-brass text-[10px] font-bold uppercase tracking-widest hover:bg-brass/20 transition-all"
+                >
+                  Pull from Cloud
+                </button>
+             </div>
+             <p className="text-[9px] text-foreground/30 font-medium leading-relaxed mt-1">
+                Use the same code on your mobile app to synchronize your Saved Signals.
+             </p>
+          </div>
+        </section>
+
         {/* Info Section */}
         <section className="pt-4 border-t border-foreground/5 pb-8">
           <div className="flex items-start gap-4 p-5 rounded-2xl bg-foreground/5 border border-foreground/5">

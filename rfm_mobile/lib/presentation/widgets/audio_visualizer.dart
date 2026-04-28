@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../logic/audio/visualizer_service.dart';
+import '../../logic/controllers/radio_controller.dart';
 
 class AudioVisualizer extends ConsumerWidget {
   final bool isPlaying;
@@ -21,16 +22,17 @@ class AudioVisualizer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final radioState = ref.watch(radioControllerProvider);
     final spectrum = ref.watch(spectrumProvider).value ?? List.generate(60, (_) => 0.05);
 
     return CustomPaint(
       size: Size(width, height),
       painter: VisualizerPainter(
-        isPlaying: isPlaying,
-        style: style,
-        progress: 0, // No longer needed for animation controller
+        isPlaying: radioState.isPlaying,
+        style: radioState.visualizerStyle,
+        progress: 0,
         amplitudes: spectrum,
-        color: color ?? const Color(0xFFD4AF37),
+        color: Color(radioState.visualizerColor).withOpacity(radioState.visualizerOpacity),
       ),
     );
   }

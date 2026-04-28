@@ -32,7 +32,15 @@ class FavoritesController extends StateNotifier<List<Station>> {
     } else {
       state = [...state, station];
     }
+    _saveToStorage();
+  }
 
+  Future<void> replaceFavorites(List<Station> newFavorites) async {
+    state = newFavorites;
+    _saveToStorage();
+  }
+
+  Future<void> _saveToStorage() async {
     final prefs = await SharedPreferences.getInstance();
     final String encoded = jsonEncode(state.map((s) => s.toJson()).toList());
     await prefs.setString(_storageKey, encoded);
