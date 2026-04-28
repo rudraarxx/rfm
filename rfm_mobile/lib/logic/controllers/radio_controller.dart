@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/station.dart';
 import '../../data/repositories/persistence_service.dart';
 import '../../main.dart'; // To access radioHandler
+import '../audio/visualizer_service.dart';
 
 class RadioState {
   final Station? currentStation;
@@ -35,7 +36,6 @@ class RadioState {
   }
 }
 
-import '../audio/visualizer_service.dart';
 
 class RadioController extends StateNotifier<RadioState> {
   final PersistenceService _persistence = PersistenceService();

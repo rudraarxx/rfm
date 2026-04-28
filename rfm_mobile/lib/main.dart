@@ -15,7 +15,7 @@ void main() async {
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.rfm.music.playback',
       androidNotificationChannelName: 'RFM Music Playback',
-      androidNotificationOngoing: true,
+      androidNotificationOngoing: false,
       androidStopForegroundOnPause: false,
     ),
   );
