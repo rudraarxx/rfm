@@ -406,13 +406,22 @@ async function main() {
   console.log(`\n💾 Saved to ${OUT_PATH}`);
   
   // ── Firebase Upload ────────────────────────────────────────────────────────
+  const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
   const serviceAccountPath = join(ROOT, "firebase-service-account.json");
   
-  if (existsSync(serviceAccountPath)) {
+  if (serviceAccountEnv || existsSync(serviceAccountPath)) {
     console.log("\n🚀 Uploading to Firebase Storage...");
     try {
       const { default: admin } = await import("firebase-admin");
-      const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
+      let serviceAccount;
+
+      if (serviceAccountEnv) {
+        console.log("  Using credentials from environment variable...");
+        serviceAccount = JSON.parse(serviceAccountEnv);
+      } else {
+        console.log("  Using credentials from 'firebase-service-account.json'...");
+        serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
+      }
       
       const bucketName = "retro-radio-493505.firebasestorage.app"; 
       

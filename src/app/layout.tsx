@@ -26,8 +26,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RFM | Nagpur Pulse Radio",
-  description: "Premium radio streaming for Nagpur and Maharashtra.",
+  title: {
+    default: "RFM | Nagpur Pulse Radio",
+    template: "%s | RFM Radio",
+  },
+  description: "Experience the pulse of Central India with RFM. High-fidelity radio streaming, live broadcasts, and the premium 'Machinist' Music OS aesthetic.",
+  keywords: ["Radio", "Nagpur", "Maharashtra", "Live Streaming", "Music OS", "RFM", "Analog Player"],
+  authors: [{ name: "The Machinist" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -37,6 +42,15 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icons/icon.svg",
     apple: "/icons/icon.svg",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://rfm-radio.vercel.app",
+    siteName: "RFM Nagpur Pulse",
+    title: "RFM | The Machinist Radio",
+    description: "High-fidelity radio streaming for Central India.",
+    images: [{ url: "/icons/icon.svg", width: 512, height: 512 }],
   },
 };
 

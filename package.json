@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "update-stations": "node scripts/fetch-indian-stations.mjs"
+    "update-stations": "node scripts/fetch-indian-stations.mjs",
+    "update-stations-enriched": "node scripts/scrape-and-upload-stations.mjs"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
