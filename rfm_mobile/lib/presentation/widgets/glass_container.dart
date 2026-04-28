@@ -46,7 +46,30 @@ class GlassContainer extends StatelessWidget {
               width: 1.5,
             ),
           ),
-          child: child,
+          child: Stack(
+            children: [
+              // Noise/Grain Layer (Simulated with a subtle gradient)
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.03,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      gradient: RadialGradient(
+                        colors: [
+                          isDark ? Colors.white : Colors.black,
+                          Colors.transparent,
+                        ],
+                        radius: 0.05,
+                        tileMode: TileMode.repeated,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              child,
+            ],
+          ),
         ),
       ),
     );

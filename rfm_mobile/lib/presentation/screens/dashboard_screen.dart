@@ -102,10 +102,24 @@ class DashboardScreen extends ConsumerWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SectionHeader(
-                            title: 'Local\nTransmission',
-                            subtitle: 'In Your City',
-                            actionText: 'Scan All',
+                          TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 800),
+                            tween: Tween(begin: 0, end: 1),
+                            curve: Curves.easeOutQuart,
+                            builder: (context, value, child) {
+                              return Opacity(
+                                opacity: value,
+                                child: Transform.translate(
+                                  offset: Offset(0, 30 * (1 - value)),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: const SectionHeader(
+                              title: 'Local\nTransmission',
+                              subtitle: 'In Your City',
+                              actionText: 'Scan All',
+                            ),
                           ),
                           SizedBox(
                             height: 340,
@@ -136,10 +150,24 @@ class DashboardScreen extends ConsumerWidget {
                 const SliverToBoxAdapter(child: SizedBox(height: 48)),
 
                 // 3. All India Radios (2+1 Staggered Layout)
-                const SliverToBoxAdapter(
-                  child: SectionHeader(
-                    title: 'National\nNetwork',
-                    subtitle: 'All India Radios',
+                SliverToBoxAdapter(
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 1000),
+                    tween: Tween(begin: 0, end: 1),
+                    curve: Curves.easeOutQuart,
+                    builder: (context, value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 40 * (1 - value)),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: const SectionHeader(
+                      title: 'National\nNetwork',
+                      subtitle: 'All India Radios',
+                    ),
                   ),
                 ),
 
