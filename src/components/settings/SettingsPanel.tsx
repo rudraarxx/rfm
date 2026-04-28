@@ -5,6 +5,7 @@ import { X, Moon, Sun, Monitor, Palette, Radio } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { useRadioStore } from "@/store/useRadioStore";
+import { toast } from "sonner";
 
 interface SettingsPanelProps {
   onClose: () => void;
