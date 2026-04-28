@@ -1,6 +1,9 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/station.dart';
 import '../../core/theme/rfm_theme.dart';
+import '../../logic/controllers/favorites_controller.dart';
 
 class HeroStationCard extends StatelessWidget {
   final Station station;
@@ -117,9 +120,31 @@ class HeroStationCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    ElevatedButton(
-                      onPressed: onPlayTap,
-                      child: const Text('TUNE SIGNAL'),
+                    Row(
+                      children: [
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final favorites = ref.watch(favoritesControllerProvider);
+                            final isFav = favorites.any((s) => s.changeuuid == station.changeuuid);
+                            return IconButton(
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                ref.read(favoritesControllerProvider.notifier).toggleFavorite(station);
+                              },
+                              icon: Icon(
+                                isFav ? Icons.star_rounded : Icons.star_outline_rounded,
+                                color: isFav ? RFMTheme.accent : Colors.white24,
+                                size: 24,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: onPlayTap,
+                          child: const Text('TUNE SIGNAL'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

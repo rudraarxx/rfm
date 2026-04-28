@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/station.dart';
 import '../../core/theme/rfm_theme.dart';
+import '../../logic/controllers/favorites_controller.dart';
 
 class StationListTile extends StatelessWidget {
   final Station station;
@@ -101,11 +103,29 @@ class StationListTile extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Consumer(
+                  builder: (context, ref, child) {
+                    final favorites = ref.watch(favoritesControllerProvider);
+                    final isFav = favorites.any((s) => s.changeuuid == station.changeuuid);
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        ref.read(favoritesControllerProvider.notifier).toggleFavorite(station);
+                      },
+                      child: Icon(
+                        isFav ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: isFav ? RFMTheme.accent : RFMTheme.onSurface.withOpacity(0.1),
+                        size: 20,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 12),
                 Text(
                   '( (',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: RFMTheme.primaryContainer,
-                        fontSize: 10,
+                        color: RFMTheme.primary,
+                        fontSize: 8,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -114,15 +134,15 @@ class StationListTile extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: const BoxDecoration(
-                    color: RFMTheme.primaryContainer,
+                    color: RFMTheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
                 Text(
                   ') )',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: RFMTheme.primaryContainer,
-                        fontSize: 10,
+                        color: RFMTheme.primary,
+                        fontSize: 8,
                         fontWeight: FontWeight.bold,
                       ),
                 ),

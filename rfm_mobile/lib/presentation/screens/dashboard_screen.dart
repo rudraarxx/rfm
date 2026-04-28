@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import '../../data/repositories/station_repository.dart';
 import '../../logic/controllers/radio_controller.dart';
+import '../../logic/controllers/favorites_controller.dart';
 import '../../core/theme/rfm_theme.dart';
 import '../widgets/hero_station_card.dart';
 import '../widgets/section_header.dart';
 import '../widgets/city_station_card.dart';
 import '../widgets/station_list_tile.dart';
 import '../widgets/mini_player.dart';
+import 'search_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -167,6 +169,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
 
+                        // 2. Your Favorites Section (Personalized Rail)
+                        SliverToBoxAdapter(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final favorites = ref.watch(favoritesControllerProvider);
+                              if (favorites.isEmpty) return const SizedBox.shrink();
+                              
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SectionHeader(
+                                    title: 'Saved\nSignals',
+                                    subtitle: 'Your Favorites',
+                                  ),
+                                  SizedBox(
+                                    height: 340,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      physics: const BouncingScrollPhysics(),
+                                      itemCount: favorites.length,
+                                      padding: const EdgeInsets.only(right: 24),
+                                      itemBuilder: (context, index) {
+                                        final station = favorites[index];
+                                        return CityStationCard(
+                                          station: station,
+                                          isActive: radioState.currentStation?.changeuuid == station.changeuuid,
+                                          onTap: () => ref.read(radioControllerProvider.notifier).setStation(station),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+
                         // Editorial Spacer
                         const SliverToBoxAdapter(child: SizedBox(height: 48)),
 
@@ -304,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const PlayerScreen(),
 
                     // Search/Explore View (Index 2)
-                    const Center(child: Text('Search Coming Soon')),
+                    const SearchScreen(),
                   ],
                 ),
               ),

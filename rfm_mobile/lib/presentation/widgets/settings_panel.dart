@@ -46,18 +46,38 @@ class SettingsPanel extends ConsumerWidget {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          Row(
+          Column(
             children: [
-              _StyleButton(
-                label: 'Classic',
-                isActive: radioState.visualizerStyle == 'classic',
-                onTap: () => notifier.setVisualizerStyle('classic'),
+              Row(
+                children: [
+                  _StyleButton(
+                    label: 'Classic',
+                    isActive: radioState.visualizerStyle == 'classic',
+                    onTap: () => notifier.setVisualizerStyle('classic'),
+                  ),
+                  const SizedBox(width: 12),
+                  _StyleButton(
+                    label: 'Radial',
+                    isActive: radioState.visualizerStyle == 'radial',
+                    onTap: () => notifier.setVisualizerStyle('radial'),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              _StyleButton(
-                label: 'Colorful',
-                isActive: radioState.visualizerStyle == 'colorful',
-                onTap: () => notifier.setVisualizerStyle('colorful'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _StyleButton(
+                    label: 'Waveform',
+                    isActive: radioState.visualizerStyle == 'wave',
+                    onTap: () => notifier.setVisualizerStyle('wave'),
+                  ),
+                  const SizedBox(width: 12),
+                  _StyleButton(
+                    label: 'Dot Matrix',
+                    isActive: radioState.visualizerStyle == 'dots',
+                    onTap: () => notifier.setVisualizerStyle('dots'),
+                  ),
+                ],
               ),
             ],
           ),

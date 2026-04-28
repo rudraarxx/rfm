@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
 
 class VisualizerService {
-  final _controller = BehaviorSubject<List<double>>.seeded(List.generate(30, (_) => 0.1));
+  final _controller = BehaviorSubject<List<double>>.seeded(List.generate(60, (_) => 0.1));
   Timer? _timer;
   bool _isPlaying = false;
   double _volume = 1.0;
@@ -24,7 +24,7 @@ class VisualizerService {
 
   void _startSimulation() {
     _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      final List<double> newValues = List.generate(30, (i) {
+      final List<double> newValues = List.generate(60, (i) {
         // Base energy
         double energy = 0.2 + math.Random().nextDouble() * 0.8;
         
@@ -42,7 +42,7 @@ class VisualizerService {
     _timer?.cancel();
     _timer = null;
     // Slowly decay to zero
-    _controller.add(List.generate(30, (_) => 0.05));
+    _controller.add(List.generate(60, (_) => 0.05));
   }
 
   void dispose() {
