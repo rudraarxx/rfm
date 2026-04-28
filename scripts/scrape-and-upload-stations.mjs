@@ -405,63 +405,43 @@ async function main() {
   writeFileSync(OUT_PATH, JSON.stringify(output, null, 2));
   console.log(`\n💾 Saved to ${OUT_PATH}`);
   
-  // ── MongoDB Upload ──────────────────────────────────────────────────────────
-  if (process.env.MONGODB_URI) {
-    console.log("\n🚀 Uploading to MongoDB...");
+  // ── Firebase Upload ────────────────────────────────────────────────────────
+  const serviceAccountPath = join(ROOT, "firebase-service-account.json");
+  
+  if (existsSync(serviceAccountPath)) {
+    console.log("\n🚀 Uploading to Firebase Storage...");
     try {
-      const { default: mongoose } = await import("mongoose");
+      const { default: admin } = await import("firebase-admin");
+      const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
       
-      const stationSchema = new mongoose.Schema({
-        changeuuid: { type: String, required: true, unique: true },
-        name: { type: String },
-        url: { type: String },
-        url_resolved: { type: String },
-        homepage: { type: String },
-        favicon: { type: String },
-        tags: { type: String },
-        country: { type: String },
-        state: { type: String },
-        votes: { type: Number },
-        city: { type: String },
-        language: { type: String },
-        codec: { type: String },
-        bitrate: { type: Number },
-        source: { type: String },
-      }, { timestamps: true });
+      const bucketName = "retro-radio-493505.firebasestorage.app"; 
       
-      const StationModel = mongoose.models.Station || mongoose.model("Station", stationSchema);
-      
-      await mongoose.connect(process.env.MONGODB_URI);
-      console.log("✅ Connected to MongoDB");
-
-      let totalSaved = 0;
-      // We process batches manually with insertMany or updateOne loop
-      // UpdateOne is better to avoid dup-key errors and update existing records
-      console.log("   Writing records...");
-      const bulkOps = deduped.map(station => ({
-        updateOne: {
-          filter: { changeuuid: station.changeuuid },
-          update: { $set: station },
-          upsert: true
-        }
-      }));
-
-      // execute bulk writes in chunks to avoid blowing up memory/bandwidth limits
-      const chunkSize = 500;
-      for (let i = 0; i < bulkOps.length; i += chunkSize) {
-        const chunk = bulkOps.slice(i, i + chunkSize);
-        await StationModel.bulkWrite(chunk, { ordered: false });
-        totalSaved += chunk.length;
-        console.log(`   Saved ${totalSaved} stations...`);
+      if (!admin.apps.length) {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          storageBucket: bucketName
+        });
       }
 
-      console.log(`✅ Uploaded ${totalSaved} stations to MongoDB`);
-      await mongoose.disconnect();
-    } catch (err) {
-      console.error("❌ MongoDB upload failed:", err.message);
+      const bucket = admin.storage().bucket();
+      const destination = "radio-browser-cache.json";
+      
+      await bucket.upload(OUT_PATH, {
+        destination,
+        public: true,
+        metadata: {
+          contentType: "application/json",
+          cacheControl: "public, max-age=3600",
+        },
+      });
+
+      console.log(`✅ Successfully uploaded to Firebase Storage as ${destination}`);
+      console.log(`🔗 Public URL: https://storage.googleapis.com/${bucket.name}/${destination}`);
+    } catch (uploadError) {
+      console.error("❌ Firebase Upload failed:", uploadError.message);
     }
   } else {
-    console.log("\nℹ️  Skipping MongoDB upload: MONGODB_URI not found");
+    console.log("\nℹ️  Skipping Firebase upload: 'firebase-service-account.json' not found.");
   }
 
 
