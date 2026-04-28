@@ -1,35 +1,77 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Station from '@/models/Station';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import crypto from 'crypto';
+
+// Cache the station data in memory to avoid repeated disk reads
+let cachedData: any = null;
+let cachedEtag: string = '';
+
+function loadStations() {
+  if (cachedData) return { data: cachedData, etag: cachedEtag };
+
+  const dataPath = join(process.cwd(), 'src', 'data', 'radio-browser-cache.json');
+  
+  if (!existsSync(dataPath)) {
+    return { data: { stations: [] }, etag: '' };
+  }
+
+  const fileContent = readFileSync(dataPath, 'utf-8');
+  const parsed = JSON.parse(fileContent);
+  
+  // We only care about the stations array
+  cachedData = parsed.stations || [];
+  cachedEtag = crypto.createHash('md5').update(fileContent).digest('hex');
+  
+  return { data: cachedData, etag: cachedEtag };
+}
 
 export async function GET(request: Request) {
   try {
-    await dbConnect();
-    const { searchParams } = new URL(request.url);
-    const state = searchParams.get('state');
-    const city = searchParams.get('city');
-    const search = searchParams.get('search');
+    const { data: stations, etag } = loadStations();
+    
+    // 1. Check ETag for conditional fetching
+    const ifNoneMatch = request.headers.get('If-None-Match');
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
 
-    const query: any = {};
+    const { searchParams } = new URL(request.url);
+    const state = searchParams.get('state')?.toLowerCase();
+    const city = searchParams.get('city')?.toLowerCase();
+    const search = searchParams.get('search')?.toLowerCase();
+
+    // 2. Perform in-memory filtering
+    let filtered = stations;
 
     if (state) {
-      if (state.length > 0) query.state = state;
+      filtered = filtered.filter((s: any) => s.state?.toLowerCase().includes(state));
     }
     if (city) {
-      if (city.length > 0) query.city = city;
+      filtered = filtered.filter((s: any) => s.city?.toLowerCase().includes(city));
     }
     if (search) {
-      query.$text = { $search: search };
+      filtered = filtered.filter((s: any) => 
+        s.name?.toLowerCase().includes(search) || 
+        s.tags?.toLowerCase().includes(search)
+      );
     }
 
-    // Limit to 200 stations generally, but wait, discovery needs all if state/city matches.
-    // If we only have state/city filters, return all matches or limit to a reasonable number.
-    const stations = await Station.find(query)
-      .sort(search ? { score: { $meta: 'textScore' } } : { votes: -1 })
-      .limit(200)
-      .lean();
+    // 3. Sort by votes descending (match original behavior)
+    filtered.sort((a: any, b: any) => (b.votes || 0) - (a.votes || 0));
 
-    return NextResponse.json({ stations });
+    // 4. Limit to 200
+    const result = filtered.slice(0, 200);
+
+    return NextResponse.json(
+      { stations: result },
+      {
+        headers: {
+          'ETag': etag,
+          'Cache-Control': 'public, max-age=3600',
+        }
+      }
+    );
   } catch (error: any) {
     console.error("GET /api/stations Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
