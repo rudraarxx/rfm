@@ -1,12 +1,22 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../data/models/station.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class RadioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
 
   RadioHandler() {
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+    
+    // Manage Wakelock based on playing state
+    playbackState.listen((state) {
+      if (state.playing) {
+        WakelockPlus.enable();
+      } else {
+        WakelockPlus.disable();
+      }
+    });
   }
 
   @override

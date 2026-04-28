@@ -13,10 +13,10 @@ void main() async {
   radioHandler = await AudioService.init(
     builder: () => RadioHandler(),
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.rfm.mobile.channel.audio',
-      androidNotificationChannelName: 'RFM Radio Playback',
+      androidNotificationChannelId: 'com.rfm.music.playback',
+      androidNotificationChannelName: 'RFM Music Playback',
       androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
+      androidStopForegroundOnPause: false,
     ),
   );
 

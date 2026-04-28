@@ -45,6 +45,7 @@ dependencies:
   rxdart: ^0.28.0
   audio_video_progress_bar: ^2.0.3
   glassmorphism: ^3.0.0
+  wakelock_plus: ^1.2.8
   http: ^1.4.0
 
 dev_dependencies:
