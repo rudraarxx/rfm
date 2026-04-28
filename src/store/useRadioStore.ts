@@ -9,7 +9,7 @@ interface RadioState {
   volume: number;
   stations: Station[];
   analyser: AnalyserNode | null;
-  visualizerStyle: "classic" | "colorful";
+  visualizerStyle: "classic" | "colorful" | "circular";
   
   // Actions
   setStation: (station: Station) => void;
@@ -18,7 +18,7 @@ interface RadioState {
   setVolume: (volume: number) => void;
   setStations: (stations: Station[]) => void;
   setAnalyser: (analyser: AnalyserNode | null) => void;
-  setVisualizerStyle: (style: "classic" | "colorful") => void;
+  setVisualizerStyle: (style: "classic" | "colorful" | "circular") => void;
   nextStation: () => void;
   previousStation: () => void;
   initialize: () => Promise<void>;

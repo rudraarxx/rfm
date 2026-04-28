@@ -9,7 +9,7 @@ interface AudioSpectrumProps {
   barWidth?: number;
   gap?: number;
   color?: string;
-  visualizerStyle?: "classic" | "colorful";
+  visualizerStyle?: "classic" | "colorful" | "circular";
   className?: string;
 }
 
@@ -47,6 +47,10 @@ export function AudioSpectrum({
     gradient.addColorStop(0.5, "#B026FF"); // Purple midpoint
     gradient.addColorStop(1, "#FF007A"); // Neon Pink
 
+    const peaks = new Float32Array(barCount).fill(0);
+    const peakSpeeds = new Float32Array(barCount).fill(0);
+    const GRAVITY = 0.05;
+
     const render = () => {
       if (!analyser || !isPlaying) {
         ctx.clearRect(0, 0, width, height);
@@ -60,23 +64,68 @@ export function AudioSpectrum({
 
       ctx.clearRect(0, 0, width, height);
 
-      for (let i = 0; i < barCount; i++) {
-        const distFromCenter = Math.abs(i - barCount / 2) / (barCount / 2);
-        const dataIndex = Math.floor(distFromCenter * (bufferLength * 0.7));
-        const value = dataArray[dataIndex] || 0;
-        const percent = value / 255;
-        const fadeScale = Math.pow(1 - distFromCenter, 1.5);
-        const actualBarHeight = Math.max(2, percent * height * 0.9 * fadeScale);
-
-        const x = i * (barWidth + gap);
-        const yTop = centerY - actualBarHeight / 2;
-
-        // Draw Bar
-        ctx.fillStyle = visualizerStyle === "colorful" ? gradient : color;
-        ctx.globalAlpha = 0.3 + percent * 0.7; 
+      if (visualizerStyle === "circular") {
+        const radius = Math.min(width, height) / 4;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const barCountCircular = 60;
         
-        drawRoundedRect(ctx, x, yTop, barWidth, actualBarHeight, barWidth / 2);
-        ctx.fill();
+        for (let i = 0; i < barCountCircular; i++) {
+          const angle = (i / barCountCircular) * Math.PI * 2;
+          const dataIndex = Math.floor((i / barCountCircular) * (bufferLength * 0.5));
+          const value = dataArray[dataIndex] || 0;
+          const percent = value / 255;
+          const barHeight = 4 + percent * radius * 0.8;
+          
+          const x1 = centerX + Math.cos(angle) * radius;
+          const y1 = centerY + Math.sin(angle) * radius;
+          const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+          const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+          
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.lineCap = "round";
+          ctx.globalAlpha = 0.4 + percent * 0.6;
+          
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      } else {
+        for (let i = 0; i < barCount; i++) {
+          const distFromCenter = Math.abs(i - barCount / 2) / (barCount / 2);
+          const dataIndex = Math.floor(distFromCenter * (bufferLength * 0.7));
+          const value = dataArray[dataIndex] || 0;
+          const percent = value / 255;
+          const fadeScale = Math.pow(1 - distFromCenter, 1.5);
+          const actualBarHeight = Math.max(2, percent * height * 0.8 * fadeScale);
+
+          const x = i * (barWidth + gap);
+          const yTop = centerY - actualBarHeight / 2;
+
+          // 1. Draw Bar
+          ctx.fillStyle = visualizerStyle === "colorful" ? gradient : color;
+          ctx.globalAlpha = 0.3 + percent * 0.7; 
+          
+          drawRoundedRect(ctx, x, yTop, barWidth, actualBarHeight, barWidth / 2);
+          ctx.fill();
+
+          // 2. Update and Draw Peak
+          if (percent > peaks[i]) {
+            peaks[i] = percent;
+            peakSpeeds[i] = 0;
+          } else {
+            peakSpeeds[i] += GRAVITY;
+            peaks[i] -= peakSpeeds[i] * 0.02;
+            if (peaks[i] < 0) peaks[i] = 0;
+          }
+
+          const peakY = centerY - (peaks[i] * height * 0.8 * fadeScale) / 2 - 4;
+          ctx.fillStyle = visualizerStyle === "colorful" ? "#FFFFFF" : color;
+          ctx.globalAlpha = 0.4;
+          ctx.fillRect(x, peakY, barWidth, 1.5);
+        }
       }
 
       animationRef.current = requestAnimationFrame(render);
