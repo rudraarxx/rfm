@@ -35,10 +35,13 @@ class RadioState {
   }
 }
 
+import '../audio/visualizer_service.dart';
+
 class RadioController extends StateNotifier<RadioState> {
   final PersistenceService _persistence = PersistenceService();
+  final VisualizerService _visualizer;
   
-  RadioController() : super(RadioState()) {
+  RadioController(this._visualizer) : super(RadioState()) {
     _init();
   }
 
@@ -54,6 +57,8 @@ class RadioController extends StateNotifier<RadioState> {
       visualizerStyle: savedStyle,
     );
 
+    _visualizer.updateState(isPlaying: state.isPlaying, volume: state.volume);
+
     // Listen to audio handler changes
     radioHandler.mediaItem.listen((item) {
       if (item != null && item.extras != null) {
@@ -67,6 +72,7 @@ class RadioController extends StateNotifier<RadioState> {
       state = state.copyWith(
         isPlaying: playbackState.playing,
       );
+      _visualizer.updateState(isPlaying: state.isPlaying, volume: state.volume);
     });
   }
 
@@ -84,6 +90,7 @@ class RadioController extends StateNotifier<RadioState> {
 
   Future<void> setVolume(double volume) async {
     state = state.copyWith(volume: volume);
+    _visualizer.updateState(isPlaying: state.isPlaying, volume: state.volume);
     await _persistence.saveVolume(volume);
   }
 
@@ -94,5 +101,6 @@ class RadioController extends StateNotifier<RadioState> {
 }
 
 final radioControllerProvider = StateNotifierProvider<RadioController, RadioState>((ref) {
-  return RadioController();
+  final visualizer = ref.watch(visualizerServiceProvider);
+  return RadioController(visualizer);
 });

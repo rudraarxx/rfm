@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../logic/audio/visualizer_service.dart';
 
-class AudioVisualizer extends StatefulWidget {
+class AudioVisualizer extends ConsumerWidget {
   final bool isPlaying;
   final String style;
   final double width;
@@ -18,44 +20,18 @@ class AudioVisualizer extends StatefulWidget {
   });
 
   @override
-  State<AudioVisualizer> createState() => _AudioVisualizerState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final spectrum = ref.watch(spectrumProvider).value ?? List.generate(30, (_) => 0.05);
 
-class _AudioVisualizerState extends State<AudioVisualizer> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  final List<double> _amplitudes = List.generate(30, (index) => 0.2 + math.Random().nextDouble() * 0.8);
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          size: Size(widget.width, widget.height),
-          painter: VisualizerPainter(
-            isPlaying: widget.isPlaying,
-            style: widget.style,
-            progress: _controller.value,
-            amplitudes: _amplitudes,
-            color: widget.color ?? const Color(0xFFD4AF37),
-          ),
-        );
-      },
+    return CustomPaint(
+      size: Size(width, height),
+      painter: VisualizerPainter(
+        isPlaying: isPlaying,
+        style: style,
+        progress: 0, // No longer needed for animation controller
+        amplitudes: spectrum,
+        color: color ?? const Color(0xFFD4AF37),
+      ),
     );
   }
 }
@@ -94,11 +70,7 @@ class VisualizerPainter extends CustomPainter {
     final gap = barWidth * 0.5;
 
     for (var i = 0; i < amplitudes.length; i++) {
-      double heightMultiplier = isPlaying 
-          ? (0.3 + 0.7 * math.sin(progress * 2 * math.pi + i * 0.5).abs()) 
-          : 0.1;
-          
-      final barHeight = size.height * amplitudes[i] * heightMultiplier;
+      final barHeight = size.height * amplitudes[i];
       final x = i * (barWidth + gap) + (size.width - (amplitudes.length * (barWidth + gap))) / 2;
       
       canvas.drawLine(
@@ -118,11 +90,7 @@ class VisualizerPainter extends CustomPainter {
     final gap = barWidth * 0.5;
 
     for (var i = 0; i < amplitudes.length; i++) {
-      double heightMultiplier = isPlaying 
-          ? (0.2 + 0.8 * math.cos(progress * 3 * math.pi + i * 0.8).abs()) 
-          : 0.05;
-          
-      final barHeight = size.height * amplitudes[i] * heightMultiplier;
+      final barHeight = size.height * amplitudes[i];
       final x = i * (barWidth + gap) + (size.width - (amplitudes.length * (barWidth + gap))) / 2;
       
       // Gradient effect
