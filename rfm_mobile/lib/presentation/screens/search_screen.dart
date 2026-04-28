@@ -106,21 +106,42 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         Expanded(
           child: _results.isEmpty && !_isLoading
             ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(LucideIcons.radio, color: Colors.white.withOpacity(0.05), size: 64),
-                    const SizedBox(height: 16),
-                    Text(
-                      'START YOUR DISCOVERY',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.1),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                      ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: Container(
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.02),
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(color: Colors.white.withOpacity(0.05)),
                     ),
-                  ],
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.compass, color: RFMTheme.primary.withOpacity(0.2), size: 48),
+                        const SizedBox(height: 24),
+                        Text(
+                          'GLOBAL DISCOVERY',
+                          style: TextStyle(
+                            color: RFMTheme.primary.withOpacity(0.6),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Explore over 40,000 signals across the planet.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.2),
+                            fontSize: 12,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               )
             : ListView.builder(

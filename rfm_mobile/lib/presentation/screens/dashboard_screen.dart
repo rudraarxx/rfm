@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import '../../data/repositories/station_repository.dart';
+import '../../data/services/station_api.dart';
 import '../../logic/controllers/radio_controller.dart';
 import '../../logic/controllers/favorites_controller.dart';
+import '../../logic/controllers/recording_controller.dart';
 import '../../core/theme/rfm_theme.dart';
 import '../widgets/hero_station_card.dart';
 import '../widgets/section_header.dart';
@@ -205,6 +207,77 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       },
                                     ),
                                   ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+
+                        // 2.1 Tape Deck (Recorded Signals)
+                        SliverToBoxAdapter(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final recState = ref.watch(recordingControllerProvider);
+                              if (recState.tapes.isEmpty) return const SizedBox.shrink();
+                              
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SectionHeader(
+                                    title: 'Tape\nDeck',
+                                    subtitle: 'Your Recordings',
+                                  ),
+                                  SizedBox(
+                                    height: 100,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      physics: const BouncingScrollPhysics(),
+                                      itemCount: recState.tapes.length,
+                                      padding: const EdgeInsets.only(left: 24, right: 24),
+                                      itemBuilder: (context, index) {
+                                        final tape = recState.tapes[index];
+                                        return Container(
+                                          width: 220,
+                                          margin: const EdgeInsets.only(right: 12),
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.05),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: Colors.white.withOpacity(0.05)),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(LucideIcons.playCircle, color: Color(0xFFD4AF37), size: 32),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      tape.stationName,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                                    ),
+                                                    Text(
+                                                      '${tape.duration.inMinutes}m ${tape.duration.inSeconds % 60}s • ${tape.timestamp.day}/${tape.timestamp.month}',
+                                                      style: TextStyle(fontSize: 9, color: Colors.white.withOpacity(0.3)),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(LucideIcons.trash2, size: 14, color: Colors.white10),
+                                                onPressed: () => ref.read(recordingControllerProvider.notifier).deleteTape(tape),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
                                 ],
                               );
                             },
