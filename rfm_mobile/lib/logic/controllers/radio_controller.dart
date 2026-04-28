@@ -77,7 +77,11 @@ class RadioController extends StateNotifier<RadioState> {
   }
 
   Future<void> setStation(Station station) async {
-    await radioHandler.playFromMediaId(station.changeuuid, station.toJson());
+    try {
+      await radioHandler.playFromMediaId(station.changeuuid, station.toJson());
+    } catch (e) {
+      print("RadioController Error: $e");
+    }
   }
 
   Future<void> togglePlay() async {
