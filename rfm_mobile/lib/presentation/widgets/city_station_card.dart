@@ -61,7 +61,7 @@ class CityStationCard extends StatelessWidget {
                   bottom: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    color: RFMTheme.primaryContainer,
+                    color: RFMTheme.primary,
                     child: Text(
                       'FM ${station.votes != null ? (station.votes! / 10).toStringAsFixed(1) : "91.1"}',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -80,9 +80,9 @@ class CityStationCard extends StatelessWidget {
             Text(
               'IN YOUR CITY / LOCAL TRANSMISSION',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: RFMTheme.onSurface.withOpacity(0.3),
-                    fontSize: 9,
-                    letterSpacing: 1,
+                    color: RFMTheme.onSurface.withOpacity(0.2),
+                    fontSize: 8,
+                    letterSpacing: 2,
                   ),
             ),
             const SizedBox(height: 8),
@@ -90,8 +90,8 @@ class CityStationCard extends StatelessWidget {
               station.name.toUpperCase(),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                    fontSize: 16,
+                    letterSpacing: -0.5,
+                    fontSize: 18,
                     color: Colors.white,
                   ),
               maxLines: 1,
@@ -99,11 +99,11 @@ class CityStationCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              station.tags?.split(',').take(2).join(' • ') ?? 'Industrial industrial beats',
+              station.tags?.split(',').take(2).join(' • ') ?? 'INDUSTRIAL BEATS',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: RFMTheme.onSurface.withOpacity(0.35),
-                    fontSize: 10,
-                    letterSpacing: 0,
+                    color: RFMTheme.onSurface.withOpacity(0.25),
+                    fontSize: 9,
+                    letterSpacing: 0.5,
                   ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

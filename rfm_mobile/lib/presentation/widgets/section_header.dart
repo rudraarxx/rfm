@@ -28,10 +28,10 @@ class SectionHeader extends StatelessWidget {
               Text(
                 subtitle.toUpperCase(),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: const Color(0xFFDA1A32),
+                      color: RFMTheme.primary,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      fontSize: 10,
+                      letterSpacing: 2.5,
+                      fontSize: 8,
                     ),
               ),
               if (actionText != null)
@@ -40,22 +40,23 @@ class SectionHeader extends StatelessWidget {
                   child: Text(
                     actionText!.toUpperCase(),
                     style: GoogleFonts.spaceGrotesk(
-                      fontSize: 10,
+                      fontSize: 8,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white24,
+                      color: Colors.white.withOpacity(0.1),
                       letterSpacing: 1,
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             title.toUpperCase(),
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  letterSpacing: -0.5,
+                  letterSpacing: -1,
                   height: 1.0,
-                  fontSize: 28,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
                 ),
           ),
         ],

@@ -37,6 +37,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
           backgroundColor: RFMTheme.surface,
           body: Stack(
             children: [
+              // Cinematic Background Blobs (Simulated)
+              Positioned(
+                top: -100,
+                left: -100,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: const BoxDecoration(
+                    color: RFMTheme.blob1,
+                    shape: BoxShape.circle,
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 200,
+                right: -50,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: const BoxDecoration(
+                    color: RFMTheme.blob2,
+                    shape: BoxShape.circle,
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+              ),
+
               // Main Scrollable Content
               SafeArea(
                 child: IndexedStack(
@@ -46,47 +80,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     CustomScrollView(
                       physics: const BouncingScrollPhysics(),
                       slivers: [
-                        // Editorial App Bar (Asymmetrical)
+                        // Web-style App Bar
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                            child: Column(
                               children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.equalizer_rounded,
-                                      color: RFMTheme.primaryContainer,
-                                      size: 24,
+                                // Animated Badge (Live Pulse)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: RFMTheme.primary.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(30),
+                                    border: Border.all(
+                                      color: RFMTheme.primary.withOpacity(0.1),
+                                      width: 0.5,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'THE MACHINIST',
-                                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                            fontSize: 20,
-                                            letterSpacing: 1,
-                                          ),
-                                    ),
-                                  ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: const BoxDecoration(
+                                          color: RFMTheme.accent,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: RFMTheme.accent,
+                                              blurRadius: 4,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text(
+                                        'LIVE NAGPUR PULSE',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 2.5,
+                                          color: RFMTheme.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    // Profile or Settings Action
-                                  },
-                                  child: Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: const BoxDecoration(
-                                      color: RFMTheme.surfaceContainerHigh,
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                    child: Icon(
-                                      Icons.person_outline_rounded,
-                                      color: RFMTheme.onSurface.withOpacity(0.4),
-                                      size: 24,
-                                    ),
+                                const SizedBox(height: 32),
+                                // Hero Title
+                                RichText(
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'NAGPUR\n',
+                                        style: Theme.of(context).textTheme.displayLarge,
+                                      ),
+                                      TextSpan(
+                                        text: 'PULSE.',
+                                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                                          color: Colors.white10,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.w200,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],

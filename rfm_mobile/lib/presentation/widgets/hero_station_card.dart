@@ -17,149 +17,125 @@ class HeroStationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 380,
-      width: double.infinity,
-      color: RFMTheme.surface,
-      child: Stack(
-        clipBehavior: Clip.none,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
         children: [
-          // Background Image (Right-aligned for asymmetry)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 40,
-            width: MediaQuery.of(context).size.width * 0.85,
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/vintage_radio_hero.png'),
-                  fit: BoxFit.cover,
-                ),
+          // Station Info Card (Studios Quality Style)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: RFMTheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.05),
+                width: 1,
               ),
-              foregroundDecoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    RFMTheme.surface,
-                    RFMTheme.surface.withOpacity(0.0),
-                  ],
-                  stops: const [0.0, 0.4],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
                 ),
-              ),
+              ],
             ),
-          ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Spacer(),
-                // Large Asymmetrical Typography
-                Transform.translate(
-                  offset: const Offset(-4, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'THE IRON',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                              fontSize: 64,
-                              height: 0.85,
-                              letterSpacing: -0.04 * 64,
-                            ),
-                      ),
-                      Text(
-                        'RHYTHM',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                              fontSize: 64,
-                              height: 0.85,
-                              letterSpacing: -0.04 * 64,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Primary Gradient Button (Sharp Corners)
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          HapticFeedback.heavyImpact();
-                          onPlayTap();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Color(0xFFFF3B3B),
-                                Color(0xFFF45B69),
-                              ],
+                    // Artwork
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: RFMTheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(16),
+                        image: station.favicon != null && station.favicon!.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(station.favicon!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                      ),
+                      child: station.favicon == null || station.favicon!.isEmpty
+                        ? const Icon(Icons.radio_rounded, color: RFMTheme.primary, size: 24)
+                        : null,
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'STUDIO QUALITY',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontSize: 8,
+                              letterSpacing: 2,
+                              color: RFMTheme.primary.withOpacity(0.5),
                             ),
-                            borderRadius: BorderRadius.zero,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.play_arrow_rounded,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'LISTEN NOW',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 1,
-                                    ),
-                              ),
-                            ],
+                          const SizedBox(height: 4),
+                          Text(
+                            station.name.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                    const Spacer(),
-                    // Frequency Info (Technical Detail)
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Tags & Action
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'FREQUENCY',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: RFMTheme.onSurface.withOpacity(0.35),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          'LOCATION',
+                          style: TextStyle(
+                            fontSize: 7,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                            color: Colors.white.withOpacity(0.2),
+                          ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
-                          '104.2 MHZ',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                fontSize: 32,
-                                color: RFMTheme.onSurface,
-                              ),
+                          station.state?.toUpperCase() ?? 'NAGPUR',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
+                    ),
+                    ElevatedButton(
+                      onPressed: onPlayTap,
+                      child: const Text('TUNE SIGNAL'),
                     ),
                   ],
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Tagline below card
+          Text(
+            'CURATED RADIO SHELL FOR THE ANALOG SOUL.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2,
+              color: Colors.white.withOpacity(0.15),
             ),
           ),
         ],
