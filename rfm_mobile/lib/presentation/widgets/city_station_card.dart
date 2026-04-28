@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/station.dart';
 import '../../core/theme/rfm_theme.dart';
@@ -17,7 +18,10 @@ class CityStationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        onTap();
+      },
       child: Container(
         width: 280,
         margin: const EdgeInsets.only(left: 24),
