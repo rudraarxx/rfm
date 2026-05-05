@@ -1,8 +1,8 @@
 {
-  "scrapedAt": "2026-04-18T09:00:13.290Z",
+  "scrapedAt": "2026-05-05T05:13:34.850Z",
   "source": "https://onlineradiofm.in",
-  "totalStations": 250,
-  "withStreamUrls": 162,
+  "totalStations": 251,
+  "withStreamUrls": 163,
   "stations": [
     {
       "changeuuid": "orfm-andhra-pradesh-visakhapatnam-fm-rainbow",
@@ -201,6 +201,26 @@
       "established": "2 October 1957",
       "contact_number": "",
       "bitrate": 49,
+      "votes": 0,
+      "source": "onlineradiofm"
+    },
+    {
+      "changeuuid": "orfm-andhra-pradesh-bhimavaram-radio-vishnu-90.4",
+      "name": "Radio Vishnu 90.4",
+      "slug": "radio-vishnu-90.4",
+      "url": "https://streamasiahlscdn.atc-labs.com/radiovishnu.m3u8",
+      "url_resolved": "https://streamasiahlscdn.atc-labs.com/radiovishnu.m3u8",
+      "homepage": "https://onlineradiofm.in/stations/radio-vishnu-90.4",
+      "favicon": "https://onlineradiofm.in/assets/image/radio/100/radiovishnunew.jpg",
+      "tags": "community",
+      "country": "India",
+      "state": "Andhra Pradesh",
+      "city": "Bhimavaram",
+      "language": "Hindi, English, Telugu",
+      "frequency": "",
+      "established": "1992",
+      "contact_number": "",
+      "bitrate": 0,
       "votes": 0,
       "source": "onlineradiofm"
     },
